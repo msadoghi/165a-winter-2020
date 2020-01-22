@@ -30,9 +30,4 @@ class Table:
 
     def __merge(self):
         pass
-
-    """
-    # Read a record with specified RID
-    """
-    def __read(self, rid, query_columns):
-        pass
+ 
