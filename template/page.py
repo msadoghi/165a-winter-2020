@@ -1,4 +1,4 @@
-# from template.config import *
+from template.config import *
 
 class Page:
 
@@ -7,7 +7,7 @@ class Page:
         self.data = bytearray(4096)
     
     def has_capacity(self):
-        return 64 - self.num_records > 0
+        return PageEntries - self.num_records > 0
     
     def write(self, value):
     	if self.has_capacity():

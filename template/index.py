@@ -9,6 +9,7 @@ from template.table import Table
 class Index:
 
     def __init__(self, table):
+        self.table = table
         pass
 
     """
@@ -16,7 +17,15 @@ class Index:
     """
 
     def locate(self, value):
-        pass
+        reckerds = []
+        for key in self.table.page_directory:
+            for page in self.table.page_directory[key]:
+                i = 0
+                while i < len(page):
+                    if value.to_byte(8, "big") == page[i:i+8]:
+                        reckerds.append((key, i))
+        return reckerds
+        
 
     """
     # optional: Create index on specific column
