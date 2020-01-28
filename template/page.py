@@ -1,8 +1,4 @@
-from template.config import *
-
-class PageDirectory:
-	def __init__(self):
-		self.entries = []w
+# from template.config import *
 
 class Page:
 
@@ -10,10 +6,11 @@ class Page:
         self.num_records = 0
         self.data = bytearray(4096)
     
-    #TODO: done??
     def has_capacity(self):
-        return PageEntries - num_records > 0
+        return 64 - self.num_records > 0
     
     def write(self, value):
-        self.num_records += 1
-        pass
+    	if self.has_capacity():
+        	valueInBytes = value.to_bytes(8, "big")
+        	self.data[self.num_records * 8 : (self.num_records + 1) * 8] = valueInBytes
+        	self.num_records += 1
