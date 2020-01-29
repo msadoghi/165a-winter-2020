@@ -1,5 +1,6 @@
-from template.db import Database
-from template.query import Query
+
+from db import Database
+from query import Query
 from time import process_time
 from random import choice, randrange
 
@@ -17,6 +18,7 @@ for i in range(0, 10000):
 insert_time_1 = process_time()
 
 print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
+print(grades_table.page_range[0][0].data)
 
 # Measuring update Performance
 update_cols = [

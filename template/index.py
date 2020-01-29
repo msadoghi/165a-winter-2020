@@ -1,4 +1,4 @@
-from template.table import Table
+from table import Table
 
 """
 # optional: Indexes the specified column of the specified table to speed up select queries
@@ -25,7 +25,7 @@ class Index:
                     if value.to_byte(8, "big") == page[i:i+8]:
                         reckerds.append((key, i))
         return reckerds
-        
+
 
     """
     # optional: Create index on specific column
