@@ -3,6 +3,7 @@ from index import Index
 from time import process_time
 import struct
 import config
+from datetime import datetime
 
 class Query:
     """
@@ -30,16 +31,19 @@ class Query:
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
 
+        #schema_encoding = str.encode(schema_encoding)
+
         #START: our code
         #TODO we need to figure out how to convert timestamp to bytes
-        #timestamp = process_time
-        schema_encoding = str.encode(schema_encoding)
+        timestamp = process_time()
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
         indirection_index = 0
-        timestamp = 1
         rid = config.StartBaseRID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
+        print(columns)
         self.table.__insert__(columns)
-        config.StartRID += 1
+        config.StartBaseRID += 1
         pass
 
     """

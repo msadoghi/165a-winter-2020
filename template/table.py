@@ -40,12 +40,12 @@ class Table:
         pass
 
     def __add_physical_page__(self):
-        for page_index in range(self.page_range + 4):
+        for page_index in range(self.num_columns + 4):
             self.page_range[page_index].append(Page()) #add a page at the current column index
 
     def __insert__(self, columns):
         for column_index in range(self.num_columns + 4):
-            for page_index in range(len(self.page_range[column_index])) #Go through every page and check if full, try to write
+            for page_index in range(len(self.page_range[column_index])): #Go through every page and check if full, try to write
                 slot_index = self.page_range[column_index][0].write(columns[column_index]) #write and return written location
                 if slot_index == -1: #if error, need to add extra page to each base page
                     self.__add_physical_page__()

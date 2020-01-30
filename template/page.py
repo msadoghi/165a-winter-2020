@@ -12,12 +12,14 @@ class Page:
     #If return value is > -1, successful write and returns index written at. Else, need to allocate new page
     def write(self, value):
         if self.has_capacity():
-            #TODO 
-            if not isinstance(value, bytes):
+            #TODO
+            if isinstance(value, int):
                 valueInBytes = value.to_bytes(8, "big")
-            else:
-                valueInBytes = value
+            elif isinstance(value, str):
+                valueInBytes = str.encode(value)
+
             self.data[self.num_records * 8 : (self.num_records + 1) * 8] = valueInBytes
             self.num_records += 1
-            return num_records * 8 
+            return self.num_records * 8
+
         return -1
