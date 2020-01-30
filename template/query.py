@@ -57,8 +57,14 @@ class Query:
 
     #TODO implement tail page logic
     def update(self, key, *columns):
+        schema_encoding = '0' * self.table.num_columns
         timestamp = process_time()
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        indirection_index = 0
+        rid = config.StartTailRID
+        columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
+        self.table.__update__(key, columns)
         pass
 
     """

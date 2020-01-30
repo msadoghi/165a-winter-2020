@@ -6,7 +6,6 @@ RID_COLUMN = 1
 TIMESTAMP_COLUMN = 2
 SCHEMA_ENCODING_COLUMN = 3
 
-
 class Record:
 
     def __init__(self, rid, key, columns):
@@ -43,6 +42,10 @@ class Table:
         for page_index in range(self.num_columns + 4):
             self.page_range[page_index].append(Page()) #add a page at the current column index
 
+    def __add_physical_tail_page__(self):
+        for page_index in range(self.num_columns + 3, 2 * (self.num_columns + 4)):
+            self.page_range[page_index].append(Page()) #add a page at the current column index
+
     def __insert__(self, columns):
         for column_index in range(self.num_columns + 4):
             for page_index in range(len(self.page_range[column_index])): #Go through every physical page and check if full, try to write
@@ -54,6 +57,15 @@ class Table:
                 self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
             pass
 
-    def __update__():
+    #TODO: update schema encoding, indirection column of base value using read(?)
+    def __update__(self, key, columns):
+        for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)): #start at the index after the last base until the last entry 
+            for page_index in range(len(self.page_range[column_index])):
+                slot_index = self.page_range[column_index][page_index].write(columns[column_index])
+
+            if slot_index == -1:
+                self.__add_physical_tail_page__()
+            else:
+                self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index)
         pass
 
