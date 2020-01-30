@@ -9,7 +9,7 @@ class Query:
     """
     # Creates a Query object that can perform different queries on the specified table
     """
-    #TODO create page directory, page for each column
+
     def __init__(self, table):
         self.table = table
         pass
@@ -26,8 +26,6 @@ class Query:
     # Insert a record with specified columns
     """
 
-    #create a record
-    # save each column of the record to a page
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
 
@@ -55,7 +53,7 @@ class Query:
     # Update a record with specified key and columns
     """
 
-    #TODO implement tail page logic
+    #TODO change schema encoding, RID of base page here??
     def update(self, key, *columns):
         schema_encoding = '0' * self.table.num_columns
         timestamp = process_time()
