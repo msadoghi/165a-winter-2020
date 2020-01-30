@@ -30,7 +30,7 @@ class Table:
 
         self.page_range = []
         #populate page range with base pages, which is a list of physical pages
-        for index in range(self.num_columns + 4):
+        for index in range(2 * (self.num_columns + 4)):
             base_page = []
             base_page.append(Page())
             self.page_range.append(base_page)
@@ -39,11 +39,17 @@ class Table:
     def __merge__(self):
         pass
 
-    def add_to_base_page(self, page_index):
-        self.page_range[index].append(Page())
+    def __add_physical_page__(self):
+        for page_index in range(self.page_range + 4):
+            self.page_range[page_index].append(Page()) #add a page at the current column index
 
-    def insert(self, columns):
-        for index in range(self.num_columns + 4):
-            if self.page_range[index][0].write(columns[index]) == -1:
-                ##TODO: implement add_to_base_page
-                self.add_to_base_page(index)
+    def __insert__(self, columns):
+        for column_index in range(self.num_columns + 4):
+            for page_index in range(len(self.page_range[column_index])) #Go through every page and check if full, try to write
+                slot_index = self.page_range[column_index][0].write(columns[column_index]) #write and return written location
+                if slot_index == -1: #if error, need to add extra page to each base page
+                    self.__add_physical_page__()
+                    continue
+                else:
+                    self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
+                pass

@@ -29,16 +29,16 @@ class Query:
     # save each column of the record to a page
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
-        schema_encoding = str.encode(schema_encoding)
 
+        #START: our code
         #TODO we need to figure out how to convert timestamp to bytes
         #timestamp = process_time
+        schema_encoding = str.encode(schema_encoding)
+        indirection_index = 0
         timestamp = 1
-
-        indirection_index = str.encode('invalid')
-        rid = config.StartRID
+        rid = config.StartBaseRID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
-        self.table.insert(columns)
+        self.table.__insert__(columns)
         config.StartRID += 1
         pass
 
