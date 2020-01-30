@@ -31,8 +31,6 @@ class Query:
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
 
-        #schema_encoding = str.encode(schema_encoding)
-
         #START: our code
         #TODO we need to figure out how to convert timestamp to bytes
         timestamp = process_time()
@@ -59,6 +57,8 @@ class Query:
 
     #TODO implement tail page logic
     def update(self, key, *columns):
+        timestamp = process_time()
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         pass
 
     """
