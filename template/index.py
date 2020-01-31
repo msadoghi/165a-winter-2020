@@ -29,7 +29,7 @@ class Index:
     """
     #TODO: CHANGE THIS????
     def create_index(self, RID, primary_key):
-        if primary_key not in index_dict:
+        if primary_key not in self.index_dict:
             self.index_dict[primary_key] = RID
             return 0
         return -1 # cant have dup primary keys

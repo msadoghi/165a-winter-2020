@@ -29,17 +29,16 @@ class Query:
 
     def insert(self, *columns):
         schema_encoding = '0' * self.table.num_columns
-
-        #START: our code
-        #TODO we need to figure out how to convert timestamp to bytes
         timestamp = process_time()
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         indirection_index = 0
+        key_index = self.table.key
         rid = self.table.base_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
-        print(columns)
-        self.table.__insert__(columns)
+        # print(columns)
+        self.table.__insert__(columns) #table insert
+        self.index.create_index(rid, columns[key_index + config.Offset]) #account for offset by adding 4
         self.table.base_RID += 1
         pass
 
@@ -48,6 +47,8 @@ class Query:
     """
 
     def select(self, key, query_columns):
+        rid = self.index.locate(key)
+        return (-1 if rid == 1 else self.table.__read__(rid, query_columns))
         pass
 
     """

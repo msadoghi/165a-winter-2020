@@ -18,7 +18,7 @@ for i in range(0, 10000):
 insert_time_1 = process_time()
 
 print("Inserting 10k records took:  \t\t\t", insert_time_1 - insert_time_0)
-print(grades_table.page_range[4][0].data)
+# print(grades_table.page_range[4][0].data)
 
 # # Measuring update Performance
 # update_cols = [
@@ -35,12 +35,12 @@ print(grades_table.page_range[4][0].data)
 # update_time_1 = process_time()
 # print("Updating 10k records took:  \t\t\t", update_time_1 - update_time_0)
 
-# # Measuring Select Performance
-# select_time_0 = process_time()
-# for i in range(0, 10000):
-#     query.select(choice(keys), [1, 1, 1, 1, 1])
-# select_time_1 = process_time()
-# print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
+# Measuring Select Performance
+select_time_0 = process_time()
+for i in range(0, 10000):
+    query.select(choice(keys), [1, 1, 1, 1, 1])
+select_time_1 = process_time()
+print("Selecting 10k records took:  \t\t\t", select_time_1 - select_time_0)
 
 # # Measuring Aggregate Performance
 # agg_time_0 = process_time()

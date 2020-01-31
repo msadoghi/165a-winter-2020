@@ -1,5 +1,6 @@
 from page import *
 from time import time
+import config
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
@@ -31,7 +32,7 @@ class Table:
         self.tail_RID = config.StartTailRID
         self.page_range = []
         #populate page range with base pages, which is a list of physical pages
-        for index in range(2 * (self.num_columns + 4)):
+        for index in range(2 * (self.num_columns + config.Offset)):
             base_page = []
             base_page.append(Page())
             self.page_range.append(base_page)
@@ -41,32 +42,29 @@ class Table:
         pass
 
     def __add_physical_base_page__(self):
-        for page_index in range(self.num_columns + 4):
+        for page_index in range(self.num_columns + config.Offset):
             self.page_range[page_index].append(Page()) #add a page at the current column index
 
     def __add_physical_tail_page__(self):
-        for page_index in range(self.num_columns + 3, 2 * (self.num_columns + 4)):
+        for page_index in range(self.num_columns + 3, 2 * (self.num_columns + config.Offset)):
             self.page_range[page_index].append(Page()) #add a page at the current column index
 
-    def __read(self, RID, columns):
+    def __read__(self, RID, columns):
         column_list = []
         key_val = -1
-        for column_index in range(4, self.num_columns + 4):
-            if column_index == self.key + 4:
-                key_val = columns[column_index]
+        for column_index in range(config.Offset, self.num_columns + config.Offset):
+            if column_index == self.key + config.Offset:
+                key_val = columns[column_index - config.Offset] #subtract offset for the param columns
 
-            #if columns[column_index] == 1:
-                #reading
-           # else:
+            if columns[column_index - config.Offset] == 1:
+                page_index, slot_index = self.page_directory[RID]
+                column_val = self.page_range[column_index][page_index].data[slot_index] #index into the physical location
+                column_list.append(column_val)
 
-
-            
-
-
-
+        return Record(RID, key_val, columns) #return proper record, or -1 on key_val not found
 
     def __insert__(self, columns):
-        for column_index in range(self.num_columns + 4):
+        for column_index in range(self.num_columns + config.Offset):
             # should be a better way of doing this instead of trying to write to each page
             page_index = len((self.page_range[column_index])) -1 
             slot_index = self.page_range[column_index][page_index].write(columns[column_index])
