@@ -48,7 +48,8 @@ class Query:
 
     def select(self, key, query_columns):
         rid = self.index.locate(key)
-        return (-1 if rid == 1 else self.table.__read__(rid, query_columns))
+        result = self.table.__read__(rid, query_columns)
+        return (-1 if rid == 1 else result)
         pass
 
     """
@@ -65,6 +66,10 @@ class Query:
         rid = self.table.tail_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
         self.table.__update__(key, columns)
+
+        old_rid = self.index.locate(key) # base record, do not update index only insert
+        self.table.__update_indirection__(rid, old_rid) #tail record gets base record's RID
+        self.table.__update_indirection__(old_rid, rid) #base record gets latest update RID
         self.table.tail_RID -= 1
         pass
 

@@ -19,5 +19,18 @@ class Page:
 
             self.data[self.num_records * 8 : (self.num_records + 1) * 8] = valueInBytes
             self.num_records += 1
-            return (self.num_records - 1) * 8
+            return self.num_records - 1
         return -1
+
+    def read(self, index):
+        result = int.from_bytes(self.data[index * 8 : (index + 1) * 8], "big")
+        return result
+
+    #TODO: choose error return
+    def inplace_update(self, index, value):
+        if isinstance(value, int):
+            valueInBytes = value.to_bytes(8, "big")
+        elif isinstance(value, str):
+            valueInBytes = str.encode(value)
+
+        self.data[self.index * 8 : (self.index + 1) * 8] = value
