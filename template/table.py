@@ -31,7 +31,7 @@ class Table:
         #populate page range with base pages, which is a list of physical pages
         for index in range(2 * (self.num_columns + 4)):
             base_page = []
-            base_page.append(Page())
+            base_page.ap. pend(Page())
             self.page_range.append(base_page)
         pass
 
@@ -55,6 +55,7 @@ class Table:
                 self.__add_physical_base_page__()
             else:
                 self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
+
             pass
 
     #TODO: update schema encoding, indirection column of base value using read(?)

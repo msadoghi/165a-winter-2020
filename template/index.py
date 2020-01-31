@@ -1,4 +1,5 @@
 from table import Table
+from collections import defaultdict
 
 """
 # optional: Indexes the specified column of the specified table to speed up select queries
@@ -10,6 +11,10 @@ class Index:
 
     def __init__(self, table):
         self.table = table
+        self.index_list = []
+        for column in self.num_columns:
+            column_dict = defaultdict(lambda: [])
+            self.index_list.append(column_dict)
         pass
 
     """
@@ -30,8 +35,12 @@ class Index:
     """
     # optional: Create index on specific column
     """
-
+    #TODO: CHANGE THIS????
     def create_index(self, column_number):
+        col_index = self.table.page_range[column_number] #page at the specified page range
+        dict_index = self.index_list[col_index]
+        for page_index in range(len(col_index)): #go through every page
+            dict_index[col_index].append(self.table.page_range[table.RID_COLUMN]) 
         pass
 
     """
