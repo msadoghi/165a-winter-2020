@@ -11,10 +11,7 @@ class Index:
 
     def __init__(self, table):
         self.table = table
-        self.index_list = []
-        for column in self.num_columns:
-            column_dict = defaultdict(lambda: [])
-            self.index_list.append(column_dict)
+        self.index_dict = {} # key is primary key; value is rid
         pass
 
     """
@@ -22,26 +19,20 @@ class Index:
     """
 
     def locate(self, value):
-        reckerds = []
-        for key in self.table.page_directory:
-            for page in self.table.page_directory[key]:
-                i = 0
-                while i < len(page):
-                    if value.to_byte(8, "big") == page[i:i+8]:
-                        reckerds.append((key, i))
-        return reckerds
+        if value in self.index_dict:
+            return self.index_dict[value]
+        return -1
 
 
     """
     # optional: Create index on specific column
     """
     #TODO: CHANGE THIS????
-    def create_index(self, column_number):
-        col_index = self.table.page_range[column_number] #page at the specified page range
-        dict_index = self.index_list[col_index]
-        for page_index in range(len(col_index)): #go through every page
-            dict_index[col_index].append(self.table.page_range[table.RID_COLUMN]) 
-        pass
+    def create_index(self, RID, primary_key):
+        if primary_key not in index_dict:
+            self.index_dict[primary_key] = RID
+            return 0
+        return -1 # cant have dup primary keys
 
     """
     # optional: Drop index of specific column
