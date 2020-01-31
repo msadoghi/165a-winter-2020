@@ -5,9 +5,6 @@ import struct
 import config
 from datetime import datetime
 
-tailRID = config.StartTailRID
-baseRID = config.StartBaseRID
-
 class Query:
     """
     # Creates a Query object that can perform different queries on the specified table
@@ -39,11 +36,11 @@ class Query:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         indirection_index = 0
-        rid = config.StartBaseRID
+        rid = self.table.base_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
         print(columns)
         self.table.__insert__(columns)
-        baseRID += 1
+        self.table.base_RID += 1
         pass
 
     """
@@ -64,10 +61,10 @@ class Query:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         indirection_index = 0
-        rid = config.StartTailRID
+        rid = self.table.tail_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
         self.table.__update__(key, columns)
-        tailRID -= 1
+        self.table.tail_RID -= 1
         pass
 
     """

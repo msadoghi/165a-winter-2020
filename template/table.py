@@ -1,6 +1,5 @@
 from page import *
 from time import time
-from index import Index
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
@@ -27,7 +26,9 @@ class Table:
         self.num_columns = num_columns
         self.page_directory = {}
         self.sum = 0
-        self.index = Index(self)
+
+        self.base_RID = config.StartBaseRID
+        self.tail_RID = config.StartTailRID
         self.page_range = []
         #populate page range with base pages, which is a list of physical pages
         for index in range(2 * (self.num_columns + 4)):
@@ -47,6 +48,23 @@ class Table:
         for page_index in range(self.num_columns + 3, 2 * (self.num_columns + 4)):
             self.page_range[page_index].append(Page()) #add a page at the current column index
 
+    def __read(self, RID, columns):
+        column_list = []
+        key_val = -1
+        for column_index in range(4, self.num_columns + 4):
+            if column_index == self.key + 4:
+                key_val = columns[column_index]
+
+            #if columns[column_index] == 1:
+                #reading
+           # else:
+
+
+            
+
+
+
+
     def __insert__(self, columns):
         for column_index in range(self.num_columns + 4):
             # should be a better way of doing this instead of trying to write to each page
@@ -62,13 +80,13 @@ class Table:
 
     #TODO: update schema encoding, indirection column of base value using read(?)
     def __update__(self, key, columns):
-        RID = self.index.locate(key)
-        page_index, slot_index = self.page_directory[RID] 
-        tail_RID = config.StartTailRID
-        current_i = self.page_range[INDIRECTION_COLUMN][page_index]
-        current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]
+        # RID = self.index.locate(key)
+        # page_index, slot_index = self.page_directory[RID] 
+        # tail_RID = config.StartTailRID
+        # current_i = self.page_range[INDIRECTION_COLUMN][page_index]
+        # current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]
        
-        for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)):
+        #for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)):
 
 
 
@@ -76,14 +94,7 @@ class Table:
         # update the encoding schema
         # get the RID for tail 
         # write to tail
-
-
-
-
-
-        config.StartTailRID += 1
-
-
+        pass
 
 """
         for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)): #start at the index after the last base until the last entry 
@@ -95,5 +106,4 @@ class Table:
             else:
                 self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index)
 """
-        pass
 
