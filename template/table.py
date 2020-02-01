@@ -60,11 +60,10 @@ class Table:
         page_index, slot_index = self.page_directory[RID]
         # print(page_index, slot_index)
         new_rid = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
-        while(new_rid != 0):
+        if new_rid != 0:
             print("reading from tail")
             print(RID, new_rid)
             page_index, slot_index = self.page_directory[new_rid] #store values from tail record
-            new_rid = self.tail_range[INDIRECTION_COLUMN][page_index].read(slot_index) #continue to go down the tail traversal list
         
         # check indir column record
         # update page and slot index based on if there is one or nah
