@@ -32,6 +32,7 @@ class Table:
         self.tail_RID = config.StartTailRID
         self.page_range = []
         self.tail_range = []
+
         #populate page range with base pages, which is a list of physical pages
         for index in range(self.num_columns + config.Offset):
             base_page = []
@@ -57,8 +58,11 @@ class Table:
 
     def __read__(self, RID, query_columns):
         page_index, slot_index = self.page_directory[RID]
+        # print(page_index, slot_index)
         new_rid = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
         if new_rid != 0:
+            print("reading from tail")
+            print(RID, new_rid)
             page_index, slot_index = self.page_directory[new_rid] #store values from tail record
         
         # check indir column record
@@ -80,8 +84,8 @@ class Table:
 
     def __insert__(self, columns):
         for column_index in range(self.num_columns + config.Offset):
-            # should be a better way of doing this instead of trying to write to each page
-            page_index = len((self.page_range[column_index])) - 1 
+            #TODO: if something is deleted from a previous page and you try to insert, maybe write there(?)
+            page_index = len((self.page_range[column_index])) - 1 #start at the latest page since everything else is full(?)
             slot_index = self.page_range[column_index][page_index].write(columns[column_index])
             
             if slot_index == -1: #if latest slot index is -1, need to add another page
@@ -90,39 +94,28 @@ class Table:
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
             pass
 
-    def __update_indirection__(RID, tail_RID):
+    def __update_indirection__(self, RID, tail_RID):
         page_index, slot_index = self.page_directory[RID]
         self.page_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, tail_RID)
 
-    def __update_schema_encoding(RID):
+    def __update_schema_encoding(self, RID):
         pass
 
     #TODO: update schema encoding, indirection column of base value using read(?)
-    def __update__(self, key, columns):
-        # RID = self.index.locate(key)
-        # page_index, slot_index = self.page_directory[RID] 
-        # tail_RID = config.StartTailRID
-        # current_i = self.page_range[INDIRECTION_COLUMN][page_index]
-        # current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]
-       
-        #for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)):
-
-
-
-        # get the old record and all the values
-        # update the encoding schema
-        # get the RID for tail 
-        # write to tail
-        pass
-
-"""
-        for column_index in range((self.num_columns + 4) + 1, 2 * (self.num_columns + 4)): #start at the index after the last base until the last entry 
-            for page_index in range(len(self.page_range[column_index])):
-                slot_index = self.page_range[column_index][page_index].write(columns[column_index])
+    def __update__(self, columns):
+        #might not need the commented out code
+        """page_index, slot_index = self.page_directory[RID] 
+        current_i = self.page_range[INDIRECTION_COLUMN][page_index]
+        current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]"""
+        print("update invoked")
+        print(columns[RID_COLUMN])
+        for column_index in range(self.num_columns + config.Offset):
+            page_index = len(self.tail_range[column_index]) - 1
+            slot_index = self.tail_range[column_index][page_index].write(columns[column_index])
 
             if slot_index == -1:
                 self.__add_physical_tail_page__()
-            else:
-                self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index)
-"""
+                self.tail_range[column_index][page_index + 1].write(columns[column_index]) #write to next page, therefore increment count on page_index
+            self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
+            pass
 

@@ -5,6 +5,11 @@ import struct
 import config
 from datetime import datetime
 
+def compare_cols(old_columns, new_columns): #if any new_columns are None type, give it the old_columns values
+        for column_index in range(len(new_columns)):
+            new_columns[column_index] = (old_columns[column_index] if new_columns[column_index] is None else new_columns[column_index])   
+        return new_columns
+
 class Query:
     """
     # Creates a Query object that can perform different queries on the specified table
@@ -56,20 +61,22 @@ class Query:
     # Update a record with specified key and columns
     """
 
-    #TODO change schema encoding, RID of base page here??
     def update(self, key, *columns):
         schema_encoding = '0' * self.table.num_columns
-        timestamp = process_time()
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
         indirection_index = 0
         rid = self.table.tail_RID
-        columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
-        self.table.__update__(key, columns)
+        old_columns = self.select(key, [1] * self.table.num_columns).columns #get every column and compare to the new one: cumulative update
+        new_columns = list(columns)
+        columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
+        self.table.__update__(columns) #add record to tail pages 
 
         old_rid = self.index.locate(key) # base record, do not update index only insert
         self.table.__update_indirection__(rid, old_rid) #tail record gets base record's RID
         self.table.__update_indirection__(old_rid, rid) #base record gets latest update RID
+
+        #TODO: update schema encoding
         self.table.tail_RID -= 1
         pass
 
