@@ -61,9 +61,11 @@ class Table:
         # print(page_index, slot_index)
         new_rid = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
         if new_rid != 0:
-            print("reading from tail")
-            print(RID, new_rid)
-            page_index, slot_index = self.page_directory[new_rid] #store values from tail record
+            page_index, slot_index = self.page_directory[new_rid] #store values from tail record 
+            # print("reading from tail")
+            # new_sid = self.tail_range[config.Offset + self.key][page_index].read(slot_index)
+            # sid = self.page_range[config.Offset + self.key][page_index].read(slot_index)
+            # print(RID, new_rid, sid,  new_sid)
         
         # check indir column record
         # update page and slot index based on if there is one or nah
@@ -101,14 +103,19 @@ class Table:
     def __update_schema_encoding(self, RID):
         pass
 
+    def __return_base_indirection__(self, RID):
+        page_index, slot_index = self.page_directory[RID]
+        indirection_index = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index)
+        return indirection_index
+
     #TODO: update schema encoding, indirection column of base value using read(?)
     def __update__(self, columns):
         #might not need the commented out code
         """page_index, slot_index = self.page_directory[RID] 
         current_i = self.page_range[INDIRECTION_COLUMN][page_index]
         current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]"""
-        print("update invoked")
-        print(columns[RID_COLUMN])
+        # print("update invoked")
+        # print(columns[RID_COLUMN])
         for column_index in range(self.num_columns + config.Offset):
             page_index = len(self.tail_range[column_index]) - 1
             slot_index = self.tail_range[column_index][page_index].write(columns[column_index])

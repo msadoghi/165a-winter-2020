@@ -54,7 +54,7 @@ class Query:
     def select(self, key, query_columns):
         rid = self.index.locate(key)
         result = self.table.__read__(rid, query_columns)
-        return (-1 if rid == 1 else result)
+        return (-1 if rid == -1 else result)
         pass
 
     """
@@ -72,9 +72,11 @@ class Query:
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
         self.table.__update__(columns) #add record to tail pages 
 
-        old_rid = self.index.locate(key) # base record, do not update index only insert
-        self.table.__update_indirection__(rid, old_rid) #tail record gets base record's RID
-        self.table.__update_indirection__(old_rid, rid) #base record gets latest update RID
+        old_rid = self.index.locate(key)
+        old_indirection =  self.table.__return_base_indirection__(old_rid)# base record, do not update index only insert
+
+        self.table.__update_indirection__(rid, old_indirection) #tail record gets base record's indirection index
+        self.table.__update_indirection__(old_rid, rid) #base record's indirection column gets latest update RID
 
         #TODO: update schema encoding
         self.table.tail_RID -= 1
