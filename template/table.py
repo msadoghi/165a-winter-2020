@@ -26,6 +26,7 @@ class Table:
         self.key = key
         self.num_columns = num_columns
         self.page_directory = {}
+        self.index = Index(self)
         pass
 
     def __merge(self):
