@@ -20,6 +20,8 @@ class Table:
     :param name: string         #Table name
     :param num_columns: int     #Number of Columns: all columns are integer
     :param key: int             #Index of table key in columns
+    :param base_RID/tail_RID    #start indexes for records for tail and base ranges
+    :param base_range/tail_range #in memory representation of page storage
     """
     def __init__(self, name, num_columns, key):
         self.name = name
@@ -62,10 +64,6 @@ class Table:
         new_rid = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
         if new_rid != 0:
             page_index, slot_index = self.page_directory[new_rid] #store values from tail record 
-            # print("reading from tail")
-            # new_sid = self.tail_range[config.Offset + self.key][page_index].read(slot_index)
-            # sid = self.base_range[config.Offset + self.key][page_index].read(slot_index)
-            # print(RID, new_rid, sid,  new_sid)
         
         # check indir column record
         # update page and slot index based on if there is one or nah
@@ -113,12 +111,6 @@ class Table:
 
     #TODO: update schema encoding, indirection column of base value using read(?)
     def __update__(self, columns):
-        #might not need the commented out code
-        """page_index, slot_index = self.page_directory[RID] 
-        current_i = self.base_range[INDIRECTION_COLUMN][page_index]
-        current_s = self.base_range[SCHEMA_ENCODING_COLUMN][page_index]"""
-        # print("update invoked")
-        # print(columns[RID_COLUMN])
         for column_index in range(self.num_columns + config.Offset):
             page_index = len(self.tail_range[column_index]) - 1
             slot_index = self.tail_range[column_index][page_index].write(columns[column_index])
