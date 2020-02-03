@@ -54,7 +54,7 @@ class Query:
     def select(self, key, query_columns):
         rid = self.index.locate(key)
         result = self.table.__read__(rid, query_columns)
-        return (-1 if rid == -1 else result)
+        return (-1 if rid == -1 else [result])
         pass
 
     """
@@ -67,7 +67,8 @@ class Query:
 
         indirection_index = 0
         rid = self.table.tail_RID
-        old_columns = self.select(key, [1] * self.table.num_columns).columns #get every column and compare to the new one: cumulative update
+        old_columns = self.select(key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
+        print("this line is OUR CODE: result of select on key " + str(key) + " is " + str(old_columns))
         new_columns = list(columns)
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
         self.table.__update__(columns) #add record to tail pages 

@@ -30,14 +30,14 @@ class Table:
 
         self.base_RID = config.StartBaseRID
         self.tail_RID = config.StartTailRID
-        self.page_range = []
+        self.base_range = []
         self.tail_range = []
 
         #populate page range with base pages, which is a list of physical pages
         for index in range(self.num_columns + config.Offset):
             base_page = []
             base_page.append(Page())
-            self.page_range.append(base_page)
+            self.base_range.append(base_page)
 
         for index in range(self.num_columns + config.Offset):
             tail_page = []
@@ -50,7 +50,7 @@ class Table:
 
     def __add_physical_base_page__(self):
         for page_index in range(self.num_columns + config.Offset):
-            self.page_range[page_index].append(Page()) #add a page at the current column index
+            self.base_range[page_index].append(Page()) #add a page at the current column index
 
     def __add_physical_tail_page__(self):
         for page_index in range(self.num_columns + config.Offset):
@@ -59,19 +59,19 @@ class Table:
     def __read__(self, RID, query_columns):
         page_index, slot_index = self.page_directory[RID]
         # print(page_index, slot_index)
-        new_rid = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
+        new_rid = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
         if new_rid != 0:
             page_index, slot_index = self.page_directory[new_rid] #store values from tail record 
             # print("reading from tail")
             # new_sid = self.tail_range[config.Offset + self.key][page_index].read(slot_index)
-            # sid = self.page_range[config.Offset + self.key][page_index].read(slot_index)
+            # sid = self.base_range[config.Offset + self.key][page_index].read(slot_index)
             # print(RID, new_rid, sid,  new_sid)
         
         # check indir column record
         # update page and slot index based on if there is one or nah
         column_list = []
         key_val = -1
-        base_or_tail_range = (self.tail_range if new_rid != 0 else self.page_range)
+        base_or_tail_range = (self.tail_range if new_rid != 0 else self.base_range)
 
         # change range to use variables start and end based on base or tail record
         for column_index in range(config.Offset, self.num_columns + config.Offset):
@@ -87,33 +87,33 @@ class Table:
     def __insert__(self, columns):
         for column_index in range(self.num_columns + config.Offset):
             #TODO: if something is deleted from a previous page and you try to insert, maybe write there(?)
-            page_index = len((self.page_range[column_index])) - 1 #start at the latest page since everything else is full(?)
-            slot_index = self.page_range[column_index][page_index].write(columns[column_index])
+            page_index = len((self.base_range[column_index])) - 1 #start at the latest page since everything else is full(?)
+            slot_index = self.base_range[column_index][page_index].write(columns[column_index])
             
             if slot_index == -1: #if latest slot index is -1, need to add another page
                 self.__add_physical_base_page__()
-                self.page_range[column_index][page_index + 1].write(columns[column_index])
+                self.base_range[column_index][page_index + 1].write(columns[column_index])
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
             pass
 
     def __update_indirection__(self, RID, tail_RID):
         page_index, slot_index = self.page_directory[RID]
-        self.page_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, tail_RID)
+        self.base_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, tail_RID)
 
     def __update_schema_encoding(self, RID):
         pass
 
     def __return_base_indirection__(self, RID):
         page_index, slot_index = self.page_directory[RID]
-        indirection_index = self.page_range[INDIRECTION_COLUMN][page_index].read(slot_index)
+        indirection_index = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index)
         return indirection_index
 
     #TODO: update schema encoding, indirection column of base value using read(?)
     def __update__(self, columns):
         #might not need the commented out code
         """page_index, slot_index = self.page_directory[RID] 
-        current_i = self.page_range[INDIRECTION_COLUMN][page_index]
-        current_s = self.page_range[SCHEMA_ENCODING_COLUMN][page_index]"""
+        current_i = self.base_range[INDIRECTION_COLUMN][page_index]
+        current_s = self.base_range[SCHEMA_ENCODING_COLUMN][page_index]"""
         # print("update invoked")
         # print(columns[RID_COLUMN])
         for column_index in range(self.num_columns + config.Offset):
