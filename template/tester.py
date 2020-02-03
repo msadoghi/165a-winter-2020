@@ -44,7 +44,6 @@ for key in records:
         query.update(key, *updated_columns)
         record = query.select(key, [1, 1, 1, 1, 1])[0]
         error = False
-        record.columns[i] = record.columns[i]
         for j, column in enumerate(record.columns):
             if column != records[key][j]:
                 error = True
