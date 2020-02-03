@@ -21,7 +21,7 @@ for i in range(0, 1000):
     query.insert(*records[key])
 
 for key in records:
-    record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
+    record = query.select(key, [1, 1, 1, 1, 1])[0]
     for i, column in enumerate(record.columns):
         if column != records[key][i]:
             print(Fore.RED + 'Select error on key', key)
@@ -34,9 +34,9 @@ for key in records:
         value = randint(0, 20)
         updated_columns[i] = value
         records[key][i] = value
-        record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
+        record = query.select(key, [1, 1, 1, 1, 1])[0]
         query.update(key, *updated_columns)
-        record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
+        record = query.select(key, [1, 1, 1, 1, 1])[0]
         for j, column in enumerate(record.columns):
             if column != records[key][j]:
                 print(Fore.RED + 'Update error for key', key)

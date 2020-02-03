@@ -29,6 +29,8 @@ class Query:
 
     """
     # Read a record with specified key
+    # :param key: the key value to select records based on
+    # :param query_columns: what columns to return. array of 1 or 0 values.
     """
 
     def select(self, key, query_columns):
