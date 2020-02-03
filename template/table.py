@@ -97,7 +97,7 @@ class Table:
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
     def __update_indirection__(self, RID, next_RID, write_to_tail):
         page_index, slot_index = self.page_directory[RID] 
-        print(page_index, slot_index)
+        # print(page_index, slot_index)
         base_or_tail_range = (self.tail_range if write_to_tail else self.base_range)
         base_or_tail_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, next_RID)
 

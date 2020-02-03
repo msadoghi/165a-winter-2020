@@ -53,10 +53,14 @@ class Query:
 
     def select(self, key, query_columns):
         rid = self.index.locate(key)
-        print("located rid is " + str(rid))
+        if rid == -1:
+            # print("INDEX: key-rid mapping not found")
+            return -1
+
+        # print("located rid is " + str(rid))
         result = self.table.__read__(rid, query_columns)
-        print("returned result is " + str(result.columns))
-        return (-1 if rid == -1 else [result])
+        # print("returned result is " + str(result.columns))
+        return [result]
         pass
 
     """
@@ -80,7 +84,7 @@ class Query:
 
         self.table.__update_indirection__(rid, old_indirection, True) #tail record gets base record's indirection index
         self.table.__update_indirection__(old_rid, rid, False) #base record's indirection column gets latest update RID
-        print("update done\n")
+        # print("update done\n")
 
         #TODO: update schema encoding
         self.table.tail_RID -= 1
@@ -93,4 +97,14 @@ class Query:
     """
 
     def sum(self, start_range, end_range, aggregate_column_index):
+        result = 0
+        # print("start range is : " + str(start_range) + " end range is " + str(end_range))
+        for key in range(start_range, end_range):
+            # print("in delete, key is " + str(key))
+            temp_record = (self.select(key, [1] * self.table.num_columns))
+            if temp_record == -1:
+                continue
+            result += temp_record[0].columns[aggregate_column_index]
+
+        return result
         pass
