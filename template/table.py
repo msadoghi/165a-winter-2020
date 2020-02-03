@@ -89,16 +89,19 @@ class Table:
             #TODO: if something is deleted from a previous page and you try to insert, maybe write there(?)
             page_index = len((self.base_range[column_index])) - 1 #start at the latest page since everything else is full(?)
             slot_index = self.base_range[column_index][page_index].write(columns[column_index])
-            
+
             if slot_index == -1: #if latest slot index is -1, need to add another page
                 self.__add_physical_base_page__()
                 self.base_range[column_index][page_index + 1].write(columns[column_index])
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
             pass
 
-    def __update_indirection__(self, RID, tail_RID):
-        page_index, slot_index = self.page_directory[RID]
-        self.base_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, tail_RID)
+    #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
+    def __update_indirection__(self, RID, next_RID, write_to_tail):
+        page_index, slot_index = self.page_directory[RID] 
+        print(page_index, slot_index)
+        base_or_tail_range = (self.tail_range if write_to_tail else self.base_range)
+        base_or_tail_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, next_RID)
 
     def __update_schema_encoding(self, RID):
         pass

@@ -53,7 +53,9 @@ class Query:
 
     def select(self, key, query_columns):
         rid = self.index.locate(key)
+        print("located rid is " + str(rid))
         result = self.table.__read__(rid, query_columns)
+        print("returned result is " + str(result.columns))
         return (-1 if rid == -1 else [result])
         pass
 
@@ -68,7 +70,7 @@ class Query:
         indirection_index = 0
         rid = self.table.tail_RID
         old_columns = self.select(key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
-        print("this line is OUR CODE: result of select on key " + str(key) + " is " + str(old_columns))
+        # print("this line is OUR CODE: result of select on key " + str(key) + " is " + str(old_columns))
         new_columns = list(columns)
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
         self.table.__update__(columns) #add record to tail pages 
@@ -76,8 +78,9 @@ class Query:
         old_rid = self.index.locate(key)
         old_indirection =  self.table.__return_base_indirection__(old_rid)# base record, do not update index only insert
 
-        self.table.__update_indirection__(rid, old_indirection) #tail record gets base record's indirection index
-        self.table.__update_indirection__(old_rid, rid) #base record's indirection column gets latest update RID
+        self.table.__update_indirection__(rid, old_indirection, True) #tail record gets base record's indirection index
+        self.table.__update_indirection__(old_rid, rid, False) #base record's indirection column gets latest update RID
+        print("update done\n")
 
         #TODO: update schema encoding
         self.table.tail_RID -= 1
