@@ -26,6 +26,7 @@ class Query:
     """
 
     def delete(self, key):
+        self.table.__delete__(self.index.locate(key))
         del self.index.index_dict[key]
         pass
 
@@ -42,11 +43,10 @@ class Query:
         key_index = self.table.key
         rid = self.table.base_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
-        # print(columns)
+        
         self.table.__insert__(columns) #table insert
         self.index.create_index(rid, columns[key_index + config.Offset]) #account for offset by adding 4
         self.table.base_RID += 1
-        pass
 
     """
     # Read a record with specified key
@@ -55,14 +55,12 @@ class Query:
     def select(self, key, query_columns):
         rid = self.index.locate(key)
         if rid == -1:
-            # print("INDEX: key-rid mapping not found")
             return -1
 
         # print("located rid is " + str(rid))
         result = self.table.__read__(rid, query_columns)
         # print("returned result is " + str(result.columns))
         return [result]
-        pass
 
     """
     # Update a record with specified key and columns
@@ -106,4 +104,3 @@ class Query:
             result += temp_record[0].columns[aggregate_column_index]
 
         return result
-        pass
