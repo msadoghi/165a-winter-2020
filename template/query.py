@@ -26,6 +26,7 @@ class Query:
     """
 
     def delete(self, key):
+        del self.index.index_dict[key]
         pass
 
     """
@@ -98,9 +99,7 @@ class Query:
 
     def sum(self, start_range, end_range, aggregate_column_index):
         result = 0
-        # print("start range is : " + str(start_range) + " end range is " + str(end_range))
-        for key in range(start_range, end_range):
-            # print("in delete, key is " + str(key))
+        for key in range(start_range, end_range + 1):
             temp_record = (self.select(key, [1] * self.table.num_columns))
             if temp_record == -1:
                 continue
