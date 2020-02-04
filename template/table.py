@@ -99,8 +99,13 @@ class Table:
         base_or_tail_range = (self.tail_range if write_to_tail else self.base_range)
         base_or_tail_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, next_RID)
 
-    def __update_schema_encoding(self, RID):
+    def __update_schema_encoding__(self, RID):
         pass
+    
+    # Set base page entry RID to 0 to invalidate it
+    def __delete__ (self, key, RID):
+        page_index, slot_index = self.page_directory[RID]
+        self.base_range[config.Offset + key][page_index].inplace_update(slot_index, 0)
 
     def __return_base_indirection__(self, RID):
         page_index, slot_index = self.page_directory[RID]
