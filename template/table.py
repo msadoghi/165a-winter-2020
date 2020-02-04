@@ -103,9 +103,9 @@ class Table:
         pass
     
     # Set base page entry RID to 0 to invalidate it
-    def __delete__ (self, key, RID):
+    def __delete__ (self, RID):
         page_index, slot_index = self.page_directory[RID]
-        self.base_range[config.Offset + key][page_index].inplace_update(slot_index, 0)
+        self.base_range[RID_COLUMN][page_index].inplace_update(slot_index, 0)
 
     def __return_base_indirection__(self, RID):
         page_index, slot_index = self.page_directory[RID]
