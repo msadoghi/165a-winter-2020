@@ -28,7 +28,6 @@ class Query:
     def delete(self, key):
         self.table.__delete__(self.index.locate(key))
         del self.index.index_dict[key]
-        pass
 
     """
     # Insert a record with specified columns
@@ -57,9 +56,7 @@ class Query:
         if rid == -1:
             return -1
 
-        # print("located rid is " + str(rid))
         result = self.table.__read__(rid, query_columns)
-        # print("returned result is " + str(result.columns))
         return [result]
 
     """
@@ -83,7 +80,6 @@ class Query:
 
         self.table.__update_indirection__(rid, old_indirection, True) #tail record gets base record's indirection index
         self.table.__update_indirection__(old_rid, rid, False) #base record's indirection column gets latest update RID
-        # print("update done\n")
 
         #TODO: update schema encoding
         self.table.tail_RID -= 1
