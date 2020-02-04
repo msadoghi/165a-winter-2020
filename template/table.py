@@ -45,7 +45,6 @@ class Table:
             tail_page = []
             tail_page.append(Page())
             self.tail_range.append(tail_page)
-        pass
 
     def __merge__(self):
         pass
@@ -91,8 +90,7 @@ class Table:
             if slot_index == -1: #if latest slot index is -1, need to add another page
                 self.__add_physical_base_page__()
                 self.base_range[column_index][page_index + 1].write(columns[column_index])
-            self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
-            pass
+            self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page director
 
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
     def __update_indirection__(self, RID, next_RID, write_to_tail):
@@ -119,5 +117,4 @@ class Table:
                 self.__add_physical_tail_page__()
                 self.tail_range[column_index][page_index + 1].write(columns[column_index]) #write to next page, therefore increment count on page_index
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
-            pass
 
