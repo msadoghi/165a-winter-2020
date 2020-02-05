@@ -26,7 +26,6 @@ class Page:
 		result = int.from_bytes(self.data[index * 8 : (index + 1) * 8], "big")
 		return result
 
-	#TODO: choose error return
 	def inplace_update(self, index, value):
 		if isinstance(value, int):
 			valueInBytes = value.to_bytes(8, "big")

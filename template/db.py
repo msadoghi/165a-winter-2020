@@ -25,7 +25,6 @@ class Database():
     """
     # Deletes the specified table
     """
-    #TODO: done??
     def drop_table(self, name):
         for table in self.tables:
             if table.name == name:

@@ -44,7 +44,7 @@ class Query:
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
         
         self.table.__insert__(columns) #table insert
-        self.index.create_index(rid, columns[key_index + config.Offset]) #account for offset by adding 4
+        self.index.create_index(rid, columns[key_index + config.Offset])
         self.table.base_RID += 1
 
     """
@@ -70,18 +70,15 @@ class Query:
         indirection_index = 0
         rid = self.table.tail_RID
         old_columns = self.select(key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
-        # print("this line is OUR CODE: result of select on key " + str(key) + " is " + str(old_columns))
         new_columns = list(columns)
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
         self.table.__update__(columns) #add record to tail pages 
 
         old_rid = self.index.locate(key)
-        old_indirection =  self.table.__return_base_indirection__(old_rid)# base record, do not update index only insert
+        old_indirection =  self.table.__return_base_indirection__(old_rid) #base record, do not update index only insert
 
         self.table.__update_indirection__(rid, old_indirection, True) #tail record gets base record's indirection index
         self.table.__update_indirection__(old_rid, rid, False) #base record's indirection column gets latest update RID
-
-        #TODO: update schema encoding
         self.table.tail_RID -= 1
         pass
 
