@@ -59,7 +59,6 @@ class Table:
 
     def __read__(self, RID, query_columns):
         page_index, slot_index = self.page_directory[RID]
-        # print(page_index, slot_index)
         new_rid = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
         if new_rid != 0:
             page_index, slot_index = self.page_directory[new_rid] #store values from tail record 
