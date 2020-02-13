@@ -1,8 +1,8 @@
-from table import Table, Record
-from index import Index
+from lstore.table import Table, Record
+from lstore.index import Index
 from time import process_time
 import struct
-import config
+import lstore.config
 from datetime import datetime
 
 def compare_cols(old_columns, new_columns): #if any new_columns are None type, give it the old_columns values
@@ -44,7 +44,7 @@ class Query:
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
 
         self.table.__insert__(columns) #table insert
-        self.index.create_index(rid, columns[key_index + config.Offset])
+        self.index.create_index(rid, columns[key_index + lstore.config.Offset])
         self.table.base_RID += 1
 
     """

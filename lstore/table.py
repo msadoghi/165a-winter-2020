@@ -1,6 +1,6 @@
-from page import *
+from lstore.page import *
 from time import time
-import config
+import lstore.config
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
@@ -30,18 +30,18 @@ class Table:
         self.page_directory = {}
         self.sum = 0
 
-        self.base_RID = config.StartBaseRID
-        self.tail_RID = config.StartTailRID
+        self.base_RID = lstore.config.StartBaseRID
+        self.tail_RID = lstore.config.StartTailRID
         self.base_range = []
         self.tail_range = []
 
         #populate page range with base pages, which is a list of physical pages
-        for index in range(self.num_columns + config.Offset):
+        for index in range(self.num_columns + lstore.config.Offset):
             base_page = []
             base_page.append(Page())
             self.base_range.append(base_page)
 
-        for index in range(self.num_columns + config.Offset):
+        for index in range(self.num_columns + lstore.config.Offset):
             tail_page = []
             tail_page.append([Page()])
             self.tail_range.append(tail_page)
@@ -50,12 +50,12 @@ class Table:
         pass
 
     def __add_physical_base_page__(self):
-        for page_index in range(self.num_columns + config.Offset):
+        for page_index in range(self.num_columns + lstore.config.Offset):
             self.base_range[page_index].append(Page()) #add a page at the current column index
             self.tail_range[page_index].append([Page()]) # add set of tail pages associates with new base page
 
     def __add_physical_tail_page__(self, page_range_index):
-        for page_index in range(self.num_columns + config.Offset):
+        for page_index in range(self.num_columns + lstore.config.Offset):
             self.tail_range[page_index][page_range_index].append(Page()) #add a page at the current column index
 
     def __read__(self, RID, query_columns):
@@ -70,20 +70,20 @@ class Table:
         if new_rid != 0:
             tail_index, tail_slot_index = self.page_directory[new_rid] #store values from tail record
 
-            for column_index in range(config.Offset, self.num_columns + config.Offset):
-                if column_index == self.key + config.Offset:
+            for column_index in range(lstore.config.Offset, self.num_columns + lstore.config.Offset):
+                if column_index == self.key + lstore.config.Offset:
                     #TODO TF is this shit, does it actually give the key val
-                    key_val = query_columns[column_index - config.Offset]
-                if query_columns[column_index - config.Offset] == 1:
+                    key_val = query_columns[column_index - lstore.config.Offset]
+                if query_columns[column_index - lstore.config.Offset] == 1:
                     column_val = self.tail_range[column_index][page_index][tail_index].read(tail_slot_index) #index into the physical location
                     column_list.append(column_val)
 
         else:
-            for column_index in range(config.Offset, self.num_columns + config.Offset):
-                if column_index == self.key + config.Offset:
-                    key_val = query_columns[column_index - config.Offset] #subtract offset for the param columns
+            for column_index in range(lstore.config.Offset, self.num_columns + lstore.config.Offset):
+                if column_index == self.key + lstore.config.Offset:
+                    key_val = query_columns[column_index - lstore.config.Offset] #subtract offset for the param columns
 
-                if query_columns[column_index - config.Offset] == 1:
+                if query_columns[column_index - lstore.config.Offset] == 1:
                     column_val = self.base_range[column_index][page_index].read(slot_index) #index into the physical location
                     column_list.append(column_val)
         # check indir column record
@@ -93,7 +93,7 @@ class Table:
         return Record(RID, key_val, column_list) #return proper record, or -1 on key_val not found
 
     def __insert__(self, columns):
-        for column_index in range(self.num_columns + config.Offset):
+        for column_index in range(self.num_columns + lstore.config.Offset):
             page_index = len((self.base_range[column_index])) - 1 #start at the latest page since everything else is full
             slot_index = self.base_range[column_index][page_index].write(columns[column_index])
 
@@ -127,7 +127,7 @@ class Table:
 
     def __update__(self, columns, base_rid):
         page_range_index, _ = self.page_directory[base_rid]
-        for column_index in range(self.num_columns + config.Offset):
+        for column_index in range(self.num_columns + lstore.config.Offset):
             page_index = len(self.tail_range[column_index][page_range_index]) - 1
             slot_index = self.tail_range[column_index][page_range_index][page_index].write(columns[column_index])
 
