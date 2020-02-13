@@ -33,7 +33,7 @@ class Query:
     # :param query_columns: what columns to return. array of 1 or 0 values.
     """
 
-    def select(self, key, query_columns):
+    def select(self, key, column, query_columns):
         pass
 
     """
