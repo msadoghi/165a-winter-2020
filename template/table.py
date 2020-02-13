@@ -43,7 +43,7 @@ class Table:
 
         for index in range(self.num_columns + config.Offset):
             tail_page = []
-            tail_page.append(Page())
+            tail_page.append([Page()])
             self.tail_range.append(tail_page)
 
     def __merge__(self):
@@ -52,31 +52,43 @@ class Table:
     def __add_physical_base_page__(self):
         for page_index in range(self.num_columns + config.Offset):
             self.base_range[page_index].append(Page()) #add a page at the current column index
+            self.tail_range[page_index].append([Page()]) # add set of tail pages associates with new base page
 
-    def __add_physical_tail_page__(self):
+    def __add_physical_tail_page__(self, page_range_index):
         for page_index in range(self.num_columns + config.Offset):
-            self.tail_range[page_index].append(Page()) #add a page at the current column index
+            self.tail_range[page_index][page_range_index].append(Page()) #add a page at the current column index
 
     def __read__(self, RID, query_columns):
+        # What the fick tail index and tails slots?
+        tail_index = tail_slot_index = -1
         page_index, slot_index = self.page_directory[RID]
         new_rid = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index) #index into the physical location
-        if new_rid != 0:
-            page_index, slot_index = self.page_directory[new_rid] #store values from tail record 
-        
-        # check indir column record
-        # update page and slot index based on if there is one or nah
+
         column_list = []
         key_val = -1
-        base_or_tail_range = (self.tail_range if new_rid != 0 else self.base_range)
 
-        # change range to use variables start and end based on base or tail record
-        for column_index in range(config.Offset, self.num_columns + config.Offset):
-            if column_index == self.key + config.Offset:
-                key_val = query_columns[column_index - config.Offset] #subtract offset for the param columns
+        if new_rid != 0:
+            tail_index, tail_slot_index = self.page_directory[new_rid] #store values from tail record
 
-            if query_columns[column_index - config.Offset] == 1:
-                column_val = base_or_tail_range[column_index][page_index].read(slot_index) #index into the physical location
-                column_list.append(column_val)
+            for column_index in range(config.Offset, self.num_columns + config.Offset):
+                if column_index == self.key + config.Offset:
+                    #TODO TF is this shit, does it actually give the key val
+                    key_val = query_columns[column_index - config.Offset]
+                if query_columns[column_index - config.Offset] == 1:
+                    column_val = self.tail_range[column_index][page_index][tail_index].read(tail_slot_index) #index into the physical location
+                    column_list.append(column_val)
+
+        else:
+            for column_index in range(config.Offset, self.num_columns + config.Offset):
+                if column_index == self.key + config.Offset:
+                    key_val = query_columns[column_index - config.Offset] #subtract offset for the param columns
+
+                if query_columns[column_index - config.Offset] == 1:
+                    column_val = self.base_range[column_index][page_index].read(slot_index) #index into the physical location
+                    column_list.append(column_val)
+        # check indir column record
+        # update page and slot index based on if there is one or nah
+
 
         return Record(RID, key_val, column_list) #return proper record, or -1 on key_val not found
 
@@ -91,14 +103,18 @@ class Table:
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
 
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
-    def __update_indirection__(self, RID, next_RID, write_to_tail):
-        page_index, slot_index = self.page_directory[RID] 
-        base_or_tail_range = (self.tail_range if write_to_tail else self.base_range)
-        base_or_tail_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, next_RID)
+    def __update_indirection_tail__(self, new_RID, old_RID, base_RID):
+        base_page_index, _ = self.page_directory[base_RID]
+        tail_page_index, slot_index = self.page_directory[new_RID]
+        self.tail_range[INDIRECTION_COLUMN][base_page_index][tail_page_index].inplace_update(slot_index, old_RID)
+
+    def __update_indirection_base__(self, old_RID, new_RID):
+        page_index, slot_index = self.page_directory[old_RID]
+        self.base_range[INDIRECTION_COLUMN][page_index].inplace_update(slot_index, new_RID)
 
     def __update_schema_encoding__(self, RID):
         pass
-    
+
     # Set base page entry RID to 0 to invalidate it
     def __delete__ (self, RID):
         page_index, slot_index = self.page_directory[RID]
@@ -109,13 +125,13 @@ class Table:
         indirection_index = self.base_range[INDIRECTION_COLUMN][page_index].read(slot_index)
         return indirection_index
 
-    def __update__(self, columns):
+    def __update__(self, columns, base_rid):
+        page_range_index, _ = self.page_directory[base_rid]
         for column_index in range(self.num_columns + config.Offset):
-            page_index = len(self.tail_range[column_index]) - 1
-            slot_index = self.tail_range[column_index][page_index].write(columns[column_index])
+            page_index = len(self.tail_range[column_index][page_range_index]) - 1
+            slot_index = self.tail_range[column_index][page_range_index][page_index].write(columns[column_index])
 
             if slot_index == -1:
-                self.__add_physical_tail_page__()
-                self.tail_range[column_index][page_index + 1].write(columns[column_index]) #write to next page, therefore increment count on page_index
+                self.__add_physical_tail_page__(page_range_index)
+                self.tail_range[column_index][page_range_index][page_index + 1].write(columns[column_index]) #write to next page, therefore increment count on page_index
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
-

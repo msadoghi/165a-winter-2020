@@ -7,7 +7,7 @@ from datetime import datetime
 
 def compare_cols(old_columns, new_columns): #if any new_columns are None type, give it the old_columns values
         for column_index in range(len(new_columns)):
-            new_columns[column_index] = (old_columns[column_index] if new_columns[column_index] is None else new_columns[column_index])   
+            new_columns[column_index] = (old_columns[column_index] if new_columns[column_index] is None else new_columns[column_index])
         return new_columns
 
 class Query:
@@ -42,7 +42,7 @@ class Query:
         key_index = self.table.key
         rid = self.table.base_RID
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
-        
+
         self.table.__insert__(columns) #table insert
         self.index.create_index(rid, columns[key_index + config.Offset])
         self.table.base_RID += 1
@@ -72,13 +72,14 @@ class Query:
         old_columns = self.select(key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
         new_columns = list(columns)
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
-        self.table.__update__(columns) #add record to tail pages 
 
         old_rid = self.index.locate(key)
+        self.table.__update__(columns, old_rid) #add record to tail pages
+
         old_indirection =  self.table.__return_base_indirection__(old_rid) #base record, do not update index only insert
 
-        self.table.__update_indirection__(rid, old_indirection, True) #tail record gets base record's indirection index
-        self.table.__update_indirection__(old_rid, rid, False) #base record's indirection column gets latest update RID
+        self.table.__update_indirection_tail__(rid, old_indirection, old_rid) #tail record gets base record's indirection index
+        self.table.__update_indirection_base__(old_rid, rid) #base record's indirection column gets latest update RID
         self.table.tail_RID -= 1
         pass
 
