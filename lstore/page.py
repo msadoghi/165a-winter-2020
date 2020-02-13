@@ -1,4 +1,4 @@
-import config
+import lstore.config
 
 class Page:
 
@@ -7,7 +7,7 @@ class Page:
 		self.data = bytearray(4096)
 
 	def has_capacity(self):
-		return (config.PageEntries - self.num_records) > 0
+		return (lstore.config.PageEntries - self.num_records) > 0
 
 	#If return value is > -1, successful write and returns index written at. Else, need to allocate new page
 	def write(self, value):

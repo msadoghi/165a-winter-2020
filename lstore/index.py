@@ -1,4 +1,4 @@
-from table import Table
+from lstore.table import Table
 from collections import defaultdict
 from btree import BTreeNode, BTree
 
