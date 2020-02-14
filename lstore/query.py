@@ -25,9 +25,9 @@ class Query:
     # Read a record with specified RID
     """
 
-    def delete(self, key):
-        self.table.__delete__(self.index.locate(key))
-        del self.index.index_dict[key]
+    def delete(self, key, col):
+        self.table.__delete__(self.index.locate(key, col))
+        del self.index.index_dict[col][key]
 
     """
     # Insert a record with specified columns
@@ -44,20 +44,22 @@ class Query:
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
 
         self.table.__insert__(columns) #table insert
-        self.index.create_index(rid, columns[key_index + lstore.config.Offset])
+        self.index.create_index(rid, columns[lstore.config.Offset:])
         self.table.base_RID += 1
 
     """
     # Read a record with specified key
     """
 
-    def select(self, key, query_columns):
-        rid = self.index.locate(key)
-        if rid == -1:
+    def select(self, key, column, query_columns):
+        rids = self.index.locate(key, column)
+        if rids == -1:
             return -1
 
-        result = self.table.__read__(rid, query_columns)
-        return [result]
+        result = []
+        for i in range(len(rids)):
+            result.append(self.table.__read__(rids[i], query_columns))
+        return result
 
     """
     # Update a record with specified key and columns
@@ -69,11 +71,11 @@ class Query:
 
         indirection_index = 0
         rid = self.table.tail_RID
-        old_columns = self.select(key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
+        old_columns = self.select(key, self.table.key, [1] * self.table.num_columns)[0].columns #get every column and compare to the new one: cumulative update
         new_columns = list(columns)
         columns = [indirection_index, rid, timestamp, schema_encoding] + compare_cols(old_columns, new_columns)
 
-        old_rid = self.index.locate(key)
+        old_rid = self.index.locate(key, self.table.key)[0]
         self.table.__update__(columns, old_rid) #add record to tail pages
 
         old_indirection =  self.table.__return_base_indirection__(old_rid) #base record, do not update index only insert
@@ -92,7 +94,7 @@ class Query:
     def sum(self, start_range, end_range, aggregate_column_index):
         result = 0
         for key in range(start_range, end_range + 1):
-            temp_record = (self.select(key, [1] * self.table.num_columns))
+            temp_record = (self.select(key, self.table.key, [1] * self.table.num_columns))
             if temp_record == -1:
                 continue
             result += temp_record[0].columns[aggregate_column_index]
