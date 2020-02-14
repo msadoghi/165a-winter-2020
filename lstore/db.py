@@ -29,3 +29,9 @@ class Database():
         for table in self.tables:
             if table.name == name:
                 del table
+
+    """
+    # Returns table with the passed name
+    """
+    def get_table(self, name):
+        pass
