@@ -1,7 +1,7 @@
 from lstore.table import Table
 import lstore.config
 from collections import defaultdict
-from btree import BTreeNode, BTree
+from lstore.btree import BTreeNode, BPTree
 
 """
 # optional: Indexes the specified column of the specified table to speed up select queries
@@ -42,7 +42,7 @@ class Index:
     # optional: Create index on specific column
     """
     #If key not in our dict, we addend the RID to the column, else we create new index
-    def create_index(self, RID, columns):
+    def create_index(self, RID, cols):
         for i in range(len(cols)):
             # Check for duplicate primary keys
             if i ==  self.table.key + lstore.config.Offset:
