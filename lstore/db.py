@@ -13,11 +13,11 @@ class Bufferpool():
     def must_evict(self):
         return len(page_map) == self.size
 
-    def fetch_page(self, page_slot):
+    def fetch_page(self, naeme, column_index, page_slot):
         if page_slot in frame_map:
             return page_map[frame_map[page_slot]]
         else:
-            new_page = self.db.get_page(page_slot)
+            new_page = self.db.table.disk.fetch_page(page_slot) #fetch page from disk
             if self.must_evict():
                 frame_num = self.evict()
                 frame_map[page_slot] = frame_num
@@ -26,12 +26,25 @@ class Bufferpool():
                 frame_map[page_slot] = len(page_map)
                 page_map[frame_map[page_slot]] = new_page
 
+        return page_map[frame_map[page_slot]]
+
+    def add_page(self, name, column_index):
+        new_page = Page()
+        if self.must_evict():
+            frame_num = self.evict()
+            frame_map[page_slot] = frame_num
+            frame_map[frame_num]= new_page
+        else:
+            frame_map[page_slot] = len(page_map)
+            page_map[frame_map[page_slot]] = new_page
+
     def evict(self):
         count = math.inf
         evict_page_slot = None
-        for fk in frame_map.keys()
-             count = (page_map[frame_map[fk]].access_count if count > page_map[frame_map[fk]].access_count)
-             evict_page_slot = (fk if count > page_map[frame_map[fk]].access_count)
+        for fk in frame_map.keys():
+            num_accesses = page_map[frame_map[fk]].access_count
+            count = (num_accesses if count > num_accesses else count)
+            evict_page_slot = (fk if count > num_accesses else evict_page_slot)
         self.db.write(evict_page_slot, page_map[frame_map[evict_page_slot]])
         return frame_map[evict_page_slot]
 
@@ -42,7 +55,8 @@ class Database():
         self.buffer_pool = Bufferpool(self)
         pass
 
-    def open(self):
+    def open(self, db_name):
+        lstore.config.DBName = db_name
         pass
 
     def close(self):
@@ -55,8 +69,8 @@ class Database():
     :param key: int             #Index of table key in columns
     """
     def create_table(self, name, num_columns, key):
-        table = Table(name, num_columns, key)
-        table.buffer = self.buffer_pool
+        table = Table(name, num_columns, key, self.buffer_pool)
+        self.tables.append(table)
         return table
 
     """
@@ -71,4 +85,9 @@ class Database():
     # Returns table with the passed name
     """
     def get_table(self, name):
+        for table in self.tables:
+            if table.name == name:
+                return table
+
+        return -1
         pass
