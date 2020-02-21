@@ -29,12 +29,13 @@ class BTreeNode(object):
                 break
 
     def split(self):
-    '''
-    Splits the node into two and stores them as child nodes.
-    '''
+        '''
+        Splits the node into two and stores them as child nodes.
+        '''
+
         left = BTreeNode(self.t)
         right = BTreeNode(self.t)
-        mid = self.# TODO:  / 2
+        mid = self.order / 2
 
         left.keys = self.keys[:mid]
         left.values = self.values[:mid]
@@ -53,7 +54,7 @@ class BTreeNode(object):
         '''
         Prints the keys at each level.
         '''
-        print counter, str(self.keys)
+        print(counter, str(self.keys))
 
         if not self.leaf:
             for item in self.values:
