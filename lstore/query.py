@@ -5,7 +5,8 @@ import struct
 import lstore.config
 from datetime import datetime
 
-def compare_cols(old_columns, new_columns): #if any new_columns are None type, give it the old_columns values
+#if any new_columns are None type, give it the old_columns values
+def compare_cols(old_columns, new_columns):
         for column_index in range(len(new_columns)):
             new_columns[column_index] = (old_columns[column_index] if new_columns[column_index] is None else new_columns[column_index])
         return new_columns
