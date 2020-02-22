@@ -63,4 +63,4 @@ print("Insert finished")
 #     # else:
 #     #     print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 # print("Aggregate finished")
-# db.close()
+db.close()

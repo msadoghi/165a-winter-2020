@@ -42,7 +42,6 @@ class Bufferpool():
     def evict(self, name, column_index):
         count = math.inf
         evict_page_slot = None
-        print("check")
         for fk in self.frame_map.keys():
             print(fk)
             print(self.frame_map[fk])
@@ -67,6 +66,10 @@ class Database():
         pass
 
     def close(self):
+        for table in self.tables:
+            for column_index in range(table.num_columns + lstore.config.Offset):
+                for page_index in self.buffer_pool.frame_map.keys():
+                    table.disk.write(table.name, column_index, page_index, self.buffer_pool.page_map[page_index])
         pass
 
     """

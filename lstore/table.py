@@ -150,6 +150,7 @@ class Table:
 
             if slot_index == 512: #if latest slot index is -1, need to add another page
                 self.__add_physical_base_page__(column_index)
+                self.offset_counter += lstore.config.FilePageLength #increase offset if in next page
                 page_index = self.offset_counter
                 current_base_page = self.buffer.fetch_page(self.name, column_index, page_index)
                 slot_index = current_base_page.num_records
@@ -157,8 +158,6 @@ class Table:
                 #self.base_range[column_index][page_index + 1].write(columns[column_index])
 
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
-
-        self.offset_counter += lstore.config.FilePageLength
 
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
     def __update_indirection_tail__(self, new_RID, old_RID, base_RID):
