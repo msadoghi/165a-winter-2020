@@ -34,7 +34,6 @@ class Disk():
     def fetch_page(self, name, column_index, offset):
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
         temp_page = Page()
-        print(temp_page.data)
         file = open(path_name, 'rb')
 
         file.seek(offset)
@@ -47,6 +46,7 @@ class Disk():
         return temp_page
 
     def write(self, name, column_index, offset, page_to_write):
+        print("here")
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
         file = open(path_name, 'w+b')
 
@@ -93,11 +93,9 @@ class Table:
     def __merge__(self):
         pass
 
-    def __add_physical_base_page__(self):
-        for column_index in range(self.num_columns + lstore.config.Offset):
-            self.buffer.add_page(self, self.name, column_index)
-
-        self.offset_counter += lstore.config.FilePageLength
+    def __add_physical_base_range__(self):
+        self.buffer.add_range(self, self.name)
+        self.offset_counter += lstore.config.FilePageLength #increase offset after adding a range
 
     def __add_physical_tail_page__(self, page_range_index):
         for page_index in range(self.num_columns + lstore.config.Offset):
@@ -141,22 +139,19 @@ class Table:
         return Record(RID, key_val, column_list) #return proper record, or -1 on key_val not found
 
     def __insert__(self, columns):
+        #returning any page in range will give proper size
+        has_current_range_capacity = self.buffer.fetch_range(self.name, self.offset_counter)[0].has_capacity()
+        if not has_current_range_capacity: #if latest slot index is -1, need to add another range
+            self.__add_physical_base_range__()
+            #self.base_range[column_index][page_index + 1].write(columns[column_index])
 
+        page_index = self.offset_counter
+        current_base_range = self.buffer.fetch_range(self.name, page_index)
         for column_index in range(self.num_columns + lstore.config.Offset):
-            page_index = self.offset_counter
-            current_base_page = self.buffer.fetch_page(self.name, column_index, page_index)
+            current_base_page = current_base_range[column_index]
             #page_index = len((self.base_range[column_index])) - 1 #start at the latest page since everything else is full
             slot_index = current_base_page.num_records
-
-            if slot_index == 512: #if latest slot index is -1, need to add another page
-                self.__add_physical_base_page__(column_index)
-                self.offset_counter += lstore.config.FilePageLength #increase offset if in next page
-                page_index = self.offset_counter
-                current_base_page = self.buffer.fetch_page(self.name, column_index, page_index)
-                slot_index = current_base_page.num_records
-                current_base_page.write(columns[column_index])
-                #self.base_range[column_index][page_index + 1].write(columns[column_index])
-
+            current_base_page.write(columns[column_index])
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
 
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to
