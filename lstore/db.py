@@ -11,42 +11,49 @@ class Bufferpool():
         self.size = lstore.config.buffersize
 
     def must_evict(self):
-        return len(page_map) == self.size
+        return len(self.page_map) == self.size
 
-    def fetch_page(self, naeme, column_index, page_slot):
-        if page_slot in frame_map:
-            return page_map[frame_map[page_slot]]
+    def fetch_page(self, name, column_index, page_slot):
+        if page_slot in self.frame_map:
+            return self.page_map[self.frame_map[page_slot]]
         else:
-            new_page = self.db.table.disk.fetch_page(page_slot) #fetch page from disk
+            curr_table = self.db.get_table(name)
+            new_page = curr_table.disk.fetch_page(name, column_index, page_slot) #fetch page from disk
             if self.must_evict():
-                frame_num = self.evict()
-                frame_map[page_slot] = frame_num
-                frame_map[frame_num]= new_page
+                frame_num = self.evict(name, column_index)
+                self.frame_map[page_slot] = frame_num
+                self.page_map[frame_num]= new_page
             else:
-                frame_map[page_slot] = len(page_map)
-                page_map[frame_map[page_slot]] = new_page
+                self.frame_map[page_slot] = len(self.page_map)
+                self.page_map[self.frame_map[page_slot]] = new_page
 
-        return page_map[frame_map[page_slot]]
+        return self.page_map[self.frame_map[page_slot]]
 
     def add_page(self, name, column_index):
         new_page = Page()
         if self.must_evict():
-            frame_num = self.evict()
-            frame_map[page_slot] = frame_num
-            frame_map[frame_num]= new_page
+            self.frame_num = self.evict()
+            self.frame_map[page_slot] = frame_num
+            self.page_map[frame_num]= new_page
         else:
-            frame_map[page_slot] = len(page_map)
-            page_map[frame_map[page_slot]] = new_page
+            self.frame_map[page_slot] = len(self.page_map)
+            self.page_map[frame_map[page_slot]] = new_page
 
-    def evict(self):
+    def evict(self, name, column_index):
         count = math.inf
         evict_page_slot = None
-        for fk in frame_map.keys():
-            num_accesses = page_map[frame_map[fk]].access_count
-            count = (num_accesses if count > num_accesses else count)
-            evict_page_slot = (fk if count > num_accesses else evict_page_slot)
-        self.db.write(evict_page_slot, page_map[frame_map[evict_page_slot]])
-        return frame_map[evict_page_slot]
+        print("check")
+        for fk in self.frame_map.keys():
+            print(fk)
+            print(self.frame_map[fk])
+            num_accesses = self.page_map[self.frame_map[fk]].access_count
+            if count > num_accesses:
+                count = num_accesses
+                evict_page_slot = fk
+
+        curr_table = self.db.get_table(name)
+        curr_table.disk.write(name, column_index, evict_page_slot, self.page_map[self.frame_map[evict_page_slot]])
+        return self.frame_map[evict_page_slot]
 
 class Database():
 

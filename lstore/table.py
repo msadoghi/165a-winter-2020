@@ -19,32 +19,40 @@ class Record:
 class Disk():
     def __init__(self, name, num_columns):
         path_name = os.getcwd() + "/" + name
-        Path(path_name).mkdir(exist_ok=True)
+        if not os.path.exists(path_name):
+            os.makedirs(path_name)
 
         for column_index in range(num_columns + lstore.config.Offset):
             filename = path_name + "/" + str(column_index) #name of the table / column number
-            file = open(filename, 'wb+')
-            if os.stat(filename).st_size == 0:
+            if not os.path.isfile(filename):
+                file = open(filename, 'wb+')
+                print("empty")
                 empty_page_data = bytearray(lstore.config.PageLength)
                 file.write((0).to_bytes(8, "big")) #this data is the number of records in the page
                 file.write(empty_page_data)
 
     def fetch_page(self, name, column_index, offset):
-        path_name = os_getcwd() + "/" + name + "/" + str(column_index)
+        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
         temp_page = Page()
-        file = open(path_name, rb)
+        print(temp_page.data)
+        file = open(path_name, 'rb')
 
         file.seek(offset)
         num_records = int.from_bytes(file.read(8), "big") #get first 8 bytes, convert to int to get num records
-        page_data = file.read(PageLength) #binary file for the page data
+        page_data = bytearray(file.read(lstore.config.PageLength)) #binary file for the page data
 
         temp_page.num_records = num_records
         temp_page.data = page_data
 
         return temp_page
 
-    def write(self, name, column_index, offset):
-        pass
+    def write(self, name, column_index, offset, page_to_write):
+        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
+        file = open(path_name, 'w+b')
+
+        file.seek(offset)
+        file.write(page_to_write.num_records.to_bytes(8, "big"))
+        file.write(page_to_write.data)
 
 class Table:
 
@@ -89,8 +97,6 @@ class Table:
         for column_index in range(self.num_columns + lstore.config.Offset):
             self.buffer.add_page(self, self.name, column_index)
 
-            #self.base_range[page_index].append(Page()) #add a page at the current column index
-            #self.tail_range[page_index].append([Page()]) # add set of tail pages associates with new base page
         self.offset_counter += lstore.config.FilePageLength
 
     def __add_physical_tail_page__(self, page_range_index):

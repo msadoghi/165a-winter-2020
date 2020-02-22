@@ -1,5 +1,6 @@
 from lstore.db import Database
 from lstore.query import Query
+from lstore.page import Page
 #from lstore.config import init
 
 from random import choice, randint, sample, seed
@@ -9,16 +10,16 @@ db = Database()
 db.open('~/ECS165')
 # Student Id and 4 grades
 grades_table = db.create_table('Grades', 5, 0)
-# query = Query(grades_table)
+query = Query(grades_table)
 
-# records = {}
-# seed(3562901)
-# for i in range(0, 1000):
-#     key = 92106429 + i
-#     records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
-#     query.insert(*records[key])
-# keys = sorted(list(records.keys()))
-# print("Insert finished")
+records = {}
+seed(3562901)
+for i in range(0, 1000):
+    key = 92106429 + i
+    records[key] = [key, randint(0, 20), randint(0, 20), randint(0, 20), randint(0, 20)]
+    query.insert(*records[key])
+keys = sorted(list(records.keys()))
+print("Insert finished")
 
 # for key in keys:
 #     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
@@ -28,8 +29,8 @@ grades_table = db.create_table('Grades', 5, 0)
 #             error = True
 #     if error:
 #         print('select error on', key, ':', record, ', correct:', records[key])
-#     # else:
-#     #     print('select on', key, ':', record)
+#     else:
+#         print('select on', key, ':', record)
 # print("Select finished")
 
 # for _ in range(10):
