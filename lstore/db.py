@@ -51,7 +51,7 @@ class Bufferpool():
             new_range.append(new_page)
 
         if self.must_evict():
-            self.frame_num = self.evict()
+            frame_num = self.evict(name)
             self.frame_map[page_slot] = frame_num
             self.page_map[frame_num]= new_range
             self.accesses[frame_num] += 1 #increase num accesses for this frame
