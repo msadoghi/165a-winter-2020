@@ -79,12 +79,11 @@ class Query:
         old_rid = self.index.locate(key, self.table.key)[0]
         self.table.__update__(columns, old_rid) #add record to tail pages
 
-        old_indirection =  self.table.__return_base_indirection__(old_rid) #base record, do not update index only insert
+        old_indirection = self.table.__return_base_indirection__(old_rid) #base record, do not update index only insert
 
-        self.table.__update_indirection_tail__(rid, old_indirection, old_rid) #tail record gets base record's indirection index
-        self.table.__update_indirection_base__(old_rid, rid) #base record's indirection column gets latest update RID
+        self.table.__update_indirection__(rid, old_indirection) #tail record gets base record's indirection index
+        self.table.__update_indirection__(old_rid, rid) #base record's indirection column gets latest update RID
         self.table.tail_RID -= 1
-        pass
 
     """
     :param start_range: int         # Start of the key range to aggregate

@@ -33,26 +33,26 @@ print("Insert finished")
 #         print('select on', key, ':', record)
 # print("Select finished")
 
-# for _ in range(10):
-#     for key in keys:
-#         updated_columns = [None, None, None, None, None]
-#         for i in range(1, grades_table.num_columns):
-#             value = randint(0, 20)
-#             updated_columns[i] = value
-#             original = records[key].copy()
-#             records[key][i] = value
-#             query.update(key, *updated_columns)
-#             record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
-#             error = False
-#             for j, column in enumerate(record.columns):
-#                 if column != records[key][j]:
-#                     error = True
-#             if error:
-#                 print('update error on', original, 'and', updated_columns, ':', record, ', correct:', records[key])
-#             # else:
-#             #     print('update on', original, 'and', updated_columns, ':', record)
-#             updated_columns[i] = None
-# print("Update finished")
+for _ in range(10):
+    for key in keys:
+        updated_columns = [None, None, None, None, None]
+        for i in range(1, grades_table.num_columns):
+            value = randint(0, 20)
+            updated_columns[i] = value
+            original = records[key].copy()
+            records[key][i] = value
+            query.update(key, *updated_columns)
+            # record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
+            # error = False
+            # for j, column in enumerate(record.columns):
+            #     if column != records[key][j]:
+            #         error = True
+            # if error:
+            #     print('update error on', original, 'and', updated_columns, ':', record, ', correct:', records[key])
+            # else:
+            #     print('update on', original, 'and', updated_columns, ':', record)
+            updated_columns[i] = None
+print("Update finished")
 
 # for i in range(0, 100):
 #     r = sorted(sample(range(0, len(keys)), 2))

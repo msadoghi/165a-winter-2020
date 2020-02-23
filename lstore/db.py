@@ -24,7 +24,7 @@ class Bufferpool():
             if self.must_evict():
                 frame_num = self.evict(name)
                 self.frame_map[page_slot] = frame_num
-                self.page_map[frame_num]= new_range
+                self.page_map[frame_num] = new_range
             else:
                 self.frame_map[page_slot] = len(self.page_map)
                 self.page_map[self.frame_map[page_slot]] = new_range
@@ -74,13 +74,12 @@ class Bufferpool():
                 evict_page_slot = fk
 
         curr_table = self.db.get_table(name)
-        for column_index in range(lstore.config + curr_table.num_columns):
+        for column_index in range(lstore.config.Offset + curr_table.num_columns):
             curr_table.disk.write(name, column_index, evict_page_slot, self.page_map[self.frame_map[evict_page_slot]][column_index])
 
         return self.frame_map[evict_page_slot]
 
 class Database():
-
     def __init__(self):
         self.tables = []
         self.buffer_pool = Bufferpool(self)
