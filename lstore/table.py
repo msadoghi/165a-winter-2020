@@ -48,8 +48,8 @@ class Disk():
     def write(self, name, column_index, offset, page_to_write):
         print("here")
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
-        file = open(path_name, 'wb+')
-
+        file = open(path_name, 'r+b')
+        print("offset " + str(offset))
         file.seek(offset)
         file.write(page_to_write.num_records.to_bytes(8, "big"))
         file.write(page_to_write.data)

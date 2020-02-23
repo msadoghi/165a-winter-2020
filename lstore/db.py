@@ -96,8 +96,8 @@ class Database():
                 for column_index in range(table.num_columns + lstore.config.Offset):
                     frame_num = self.buffer_pool.frame_map[page_index]
                     table.disk.write(table.name, column_index, page_index, self.buffer_pool.page_map[frame_num][column_index])
-        pass
 
+        pass
     """
     # Creates a new table
     :param name: string         #Table name
