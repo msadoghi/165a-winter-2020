@@ -1,4 +1,5 @@
 from lstore.table import Table
+from lstore.page import Page
 import lstore.config
 import math
 
@@ -41,21 +42,23 @@ class Bufferpool():
 
         return new_range
 
-    def add_range(self, name):
+    def add_range(self, name, page_slot):
+        print("adding range")
         curr_table = self.db.get_table(name)
         new_range = []
         for column_index in range(lstore.config.Offset + curr_table.num_columns):
             new_page = Page()
             new_range.append(new_page)
-        
+
         if self.must_evict():
             self.frame_num = self.evict()
             self.frame_map[page_slot] = frame_num
             self.page_map[frame_num]= new_range
             self.accesses[frame_num] += 1 #increase num accesses for this frame
         else:
+            print(page_slot)
             self.frame_map[page_slot] = len(self.page_map)
-            self.page_map[frame_map[page_slot]] = new_range
+            self.page_map[self.frame_map[page_slot]] = new_range
             self.accesses[self.frame_map[page_slot]] += 1 #increase num accesses for this frame
 
     def evict(self, name):
@@ -89,9 +92,10 @@ class Database():
 
     def close(self):
         for table in self.tables:
-            for column_index in range(table.num_columns + lstore.config.Offset):
-                for page_index in self.buffer_pool.frame_map.keys():
-                    table.disk.write(table.name, column_index, page_index, self.buffer_pool.page_map[page_index][column_index])
+            for page_index in self.buffer_pool.frame_map.keys():
+                for column_index in range(table.num_columns + lstore.config.Offset):
+                    frame_num = self.buffer_pool.frame_map[page_index]
+                    table.disk.write(table.name, column_index, page_index, self.buffer_pool.page_map[frame_num][column_index])
         pass
 
     """
