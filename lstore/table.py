@@ -48,7 +48,7 @@ class Disk():
     def write(self, name, column_index, offset, page_to_write):
         print("here")
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
-        file = open(path_name, 'w+b')
+        file = open(path_name, 'wb+')
 
         file.seek(offset)
         file.write(page_to_write.num_records.to_bytes(8, "big"))
@@ -94,8 +94,8 @@ class Table:
         pass
 
     def __add_physical_base_range__(self):
-        self.buffer.add_range(self, self.name)
         self.offset_counter += lstore.config.FilePageLength #increase offset after adding a range
+        self.buffer.add_range(self.name, self.offset_counter)
 
     def __add_physical_tail_page__(self, page_range_index):
         for page_index in range(self.num_columns + lstore.config.Offset):
@@ -140,7 +140,8 @@ class Table:
 
     def __insert__(self, columns):
         #returning any page in range will give proper size
-        has_current_range_capacity = self.buffer.fetch_range(self.name, self.offset_counter)[0].has_capacity()
+        current_range = self.buffer.fetch_range(self.name, self.offset_counter)[0]
+        has_current_range_capacity = current_range.has_capacity()
         if not has_current_range_capacity: #if latest slot index is -1, need to add another range
             self.__add_physical_base_range__()
             #self.base_range[column_index][page_index + 1].write(columns[column_index])
@@ -149,9 +150,7 @@ class Table:
         current_base_range = self.buffer.fetch_range(self.name, page_index)
         for column_index in range(self.num_columns + lstore.config.Offset):
             current_base_page = current_base_range[column_index]
-            #page_index = len((self.base_range[column_index])) - 1 #start at the latest page since everything else is full
-            slot_index = current_base_page.num_records
-            current_base_page.write(columns[column_index])
+            slot_index = current_base_page.write(columns[column_index])
             self.page_directory[columns[RID_COLUMN]] = (page_index, slot_index) #on successful write, store to page directory
 
     #in place update of the indirection entry. The third flag is a boolean set based on which page range written to

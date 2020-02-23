@@ -17,14 +17,15 @@ class Page:
 		if self.has_capacity():
 			self.dirty = True
 
-		if isinstance(value, int):
-			valueInBytes = value.to_bytes(8, "big")
-		elif isinstance(value, str):
-			valueInBytes = str.encode(value)
-
+			if isinstance(value, int):
+				valueInBytes = value.to_bytes(8, "big")
+			elif isinstance(value, str):
+				valueInBytes = str.encode(value)
+			
 			self.data[self.num_records * 8 : (self.num_records + 1) * 8] = valueInBytes
 			self.num_records += 1
 			return self.num_records - 1
+
 		return -1
 
 	def read(self, index):
