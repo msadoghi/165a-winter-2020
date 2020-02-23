@@ -1,11 +1,11 @@
 from lstore.db import Database
 from lstore.query import Query
-from lstore.config import init
+#from lstore.config import init
 
 from random import choice, randint, sample, seed
 
 # Student Id and 4 grades
-init()
+#init()
 db = Database()
 db.open('~/ECS165')
 grades_table = db.create_table('Grades', 5, 0)

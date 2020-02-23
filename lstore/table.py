@@ -26,7 +26,6 @@ class Disk():
             filename = path_name + "/" + str(column_index) #name of the table / column number
             if not os.path.isfile(filename):
                 file = open(filename, 'wb+')
-                print("empty")
                 empty_page_data = bytearray(lstore.config.PageLength)
                 file.write((0).to_bytes(4, "big"))
                 file.write((0).to_bytes(4, "big")) #this data is the number of records in the page
@@ -50,7 +49,6 @@ class Disk():
         return temp_page
 
     def write(self, name, column_index, offset, page_to_write):
-        print("here")
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
         file = open(path_name, 'r+b')
 
@@ -63,14 +61,14 @@ class Disk():
         file = open(path_name, 'r+b')
 
         file.seek(offset)
-        file.write(offset_to_write)
+        file.write(offset_to_write.to_bytes(4, "big"))
 
     #return the offset pointer for the specified disk 
     def get_offset(self, name, column_index, offset):
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
-        file = open(path_name, 'r+b')
+        file = open(path_name, 'rb')
 
-        file.seek(path_name)
+        file.seek(offset)
         tail_offset = int.from_bytes(file.read(4), "big")
         return tail_offset
 
@@ -132,7 +130,7 @@ class Table:
         # What the fick tail index and tails slots?
         tail_index = tail_slot_index = -1
         page_index, slot_index = self.page_directory[RID]
-        current_page = self.buffer.fetch_page(self.name, INDIRECTION_COLUMN, page_index) #index into the physical location
+        current_page = self.buffer.fetch_range(self.name, page_index)[INDIRECTION_COLUMN] #index into the physical location
         new_rid = current_page.read(slot_index)
 
         column_list = []
@@ -140,23 +138,24 @@ class Table:
 
         if new_rid != 0:
             tail_index, tail_slot_index = self.page_directory[new_rid] #store values from tail record
-
+            current_tail_range = self.buffer.fetch_range(self.name, tail_index)
             for column_index in range(lstore.config.Offset, self.num_columns + lstore.config.Offset):
                 if column_index == self.key + lstore.config.Offset:
                     #TODO TF is this shit, does it actually give the key val
                     key_val = query_columns[column_index - lstore.config.Offset]
                 if query_columns[column_index - lstore.config.Offset] == 1:
-                    current_tail_page = self.buffer.fetch_page(self.name, column_index, tail_index) #get tail page from 
+                    current_tail_page = current_tail_range[column_index] #get tail page from 
                     column_val = current_tail_page.read(tail_slot_index)
                     column_list.append(column_val)
 
         else:
+            current_base_range = self.buffer.fetch_range(self.name, page_index)
             for column_index in range(lstore.config.Offset, self.num_columns + lstore.config.Offset):
                 if column_index == self.key + lstore.config.Offset:
                     key_val = query_columns[column_index - lstore.config.Offset] #subtract offset for the param columns
 
                 if query_columns[column_index - lstore.config.Offset] == 1:
-                    current_base_page = self.buffer.fetch_page(self.name, column_index, page_index)
+                    current_base_page = current_base_range[column_index]
                     column_val = current_base_page.read(slot_index)
                     column_list.append(column_val)
         # check indir column record
@@ -167,7 +166,7 @@ class Table:
 
     def __insert__(self, columns):
         #returning any page in range will give proper size
-        current_range = self.buffer.fetch_range(self.name, self.base_RIDoffset_counter)[0]
+        current_range = self.buffer.fetch_range(self.name, self.base_offset_counter)[0]
         if not current_range.has_capacity(): #if latest slot index is -1, need to add another range
             self.__add_physical_base_range__()
             #self.base_range[column_index][page_index + 1].write(columns[column_index])
@@ -200,35 +199,43 @@ class Table:
         return indirection_index
 
     def __traverse_tail__(self, page_index):
+        print("in tail traverse")
         tail_offset = self.disk.get_offset(self.name, 0, page_index) #tail pointer at the specified base page in disk
+        print("tail traverse: offset returned")
         prev_tail = page_index
-        while (tail_offset != 0):
+        while tail_offset != 0: 
+            #print("tail traverse: traversing...")
             prev_tail = tail_offset
             tail_offset = self.disk.get_offset(self.name, 0, prev_tail)
 
         tail_offset = prev_tail
+        print("tail traverse: completed")
         return tail_offset
 
     def __update__(self, columns, base_rid):
+        print("in table update")
+        print("self.base_offset_counter is " + str(self.base_offset_counter) + " self.tail_offset_counter is " + str(self.tail_offset_counter))
         base_offset, _ = self.page_directory[base_rid]
 
         current_tail = None
         previous_offset = self.__traverse_tail__(base_offset)
         if previous_offset == base_offset: #if there is no tail page for the base page
+            print("adding range for base page")
             self.__add_physical_tail_range__()
             
         page_offset = self.tail_offset_counter
         current_tail = self.buffer.fetch_range(self.name, page_offset)[0]
         if not current_tail.has_capacity(): #if the latest tail page is full
+            print("adding new tail page to existing range")
             self.__add_physical_tail_range__()
             #add the new range and update the tail offsets accordingly 
 
-        page_index = self.tail_offset_counter
+        page_offset = self.tail_offset_counter
         current_tail_range = self.buffer.fetch_range(self.name, page_offset)
+        print("tail range fetched successfully")
         for column_index in range(self.num_columns + lstore.config.Offset):
             current_tail_page = current_tail_range[column_index]
             self.disk.update_offset(self.name, column_index, previous_offset, page_offset) #update offset value in the page
 
-            slot_index = self.current_tail_page.write(columns[column_index])
+            slot_index = current_tail_page.write(columns[column_index])
             self.page_directory[columns[RID_COLUMN]] = (page_offset, slot_index) #on successful write, store to page directory
-
