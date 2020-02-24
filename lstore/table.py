@@ -60,10 +60,6 @@ class Disk():
     def update_offset(self, name, column_index, offset, offset_to_write):
         path_name = os.getcwd() + "/" + name + "/" + str(column_index)
         file = open(path_name, 'r+b')
-        if (offset == offset_to_write):
-            print("oh boi we sure fucked up here")
-            print(offset)
-            sys.exit(1)
 
         file.seek(offset)
         file.write(offset_to_write.to_bytes(4, "big"))
@@ -158,7 +154,6 @@ class Table:
                     column_list.append(column_val)
 
         else:
-           # THINK the error might be in here, seems like it sometimes just reads 0's
             current_base_range = self.buffer.fetch_range(self.name, page_index)
             for column_index in range(lstore.config.Offset, self.num_columns + lstore.config.Offset):
                 if column_index == self.key + lstore.config.Offset:
@@ -213,7 +208,6 @@ class Table:
         tail_offset = self.disk.get_offset(self.name, 0, page_index) #tail pointer at the specified base page in disk
         prev_tail = page_index
         while tail_offset != 0: 
-            #print("tail traverse: traversing...")
             prev_tail = tail_offset
             tail_offset = self.disk.get_offset(self.name, 0, prev_tail)
 
@@ -221,7 +215,6 @@ class Table:
         return tail_offset
 
     def __update__(self, columns, base_rid):
-        #print("in table update")
         #print("self.base_offset_counter is " + str(self.base_offset_counter) + " self.tail_offset_counter is " + str(self.tail_offset_counter))
         base_offset, _ = self.page_directory[base_rid]
 
@@ -242,12 +235,8 @@ class Table:
 
         current_tail_range = self.buffer.fetch_range(self.name, page_offset)
         #print("tail range fetched successfully")
-        print(" ")
-        print("page_index of previous is " + str(page_offset))
         for column_index in range(self.num_columns + lstore.config.Offset):
-            print(columns[column_index], end = " ")
+            #print(columns[column_index], end = " ")
             current_tail_page = current_tail_range[column_index]
-            #self.disk.update_offset(self.name, column_index, previous_offset, page_offset) #update offset value in the page
             slot_index = current_tail_page.write(columns[column_index])
-        print(" ")
         self.page_directory[columns[RID_COLUMN]] = (page_offset, slot_index) #on successful write, store to page directory

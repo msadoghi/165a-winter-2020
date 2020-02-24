@@ -29,9 +29,9 @@ for key in keys:
         if column != records[key][i]:
             error = True
     if error:
-        print('select error on', key, ':', record, ', correct:', records[key])
-    # else:
-    #     print('select on', key, ':', record)
+        print('select error on', key, ':', record.columns, ', correct:', records[key])
+    else:
+        print('select on', key, ':', record.columns)
 print("Select finished")
 
 for _ in range(10):
@@ -62,7 +62,7 @@ for i in range(0, 100):
     result = query.sum(keys[r[0]], keys[r[1]], 0)
     if column_sum != result:
         print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
-    # else:
-    #     print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
+    else:
+        print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 print("Aggregate finished")
 db.close()
