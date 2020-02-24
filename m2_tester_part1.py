@@ -1,14 +1,10 @@
 from lstore.db import Database
 from lstore.query import Query
-from lstore.page import Page
-#from lstore.config import init
 
 from random import choice, randint, sample, seed
-import sys
 
-#init()
 db = Database()
-db.open('~/ECS165')
+db.open('/ECS165')
 # Student Id and 4 grades
 grades_table = db.create_table('Grades', 5, 0)
 query = Query(grades_table)
@@ -29,9 +25,9 @@ for key in keys:
         if column != records[key][i]:
             error = True
     if error:
-        print('select error on', key, ':', record.columns, ', correct:', records[key])
-    else:
-        print('select on', key, ':', record.columns)
+        print('select error on', key, ':', record, ', correct:', records[key])
+    # else:
+    #     print('select on', key, ':', record)
 print("Select finished")
 
 for _ in range(10):
@@ -49,10 +45,9 @@ for _ in range(10):
                 if column != records[key][j]:
                     error = True
             if error:
-                print('update error on', original, 'and', updated_columns, ':', record.columns, ', correct:', records[key])
-                sys.exit(3)
-            else:
-                print('update on', original, 'and', updated_columns, ':', record.columns)
+                print('update error on', original, 'and', updated_columns, ':', record, ', correct:', records[key])
+            # else:
+            #     print('update on', original, 'and', updated_columns, ':', record)
             updated_columns[i] = None
 print("Update finished")
 
@@ -62,7 +57,7 @@ for i in range(0, 100):
     result = query.sum(keys[r[0]], keys[r[1]], 0)
     if column_sum != result:
         print('sum error on [', keys[r[0]], ',', keys[r[1]], ']: ', result, ', correct: ', column_sum)
-    else:
-        print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
+    # else:
+    #     print('sum on [', keys[r[0]], ',', keys[r[1]], ']: ', column_sum)
 print("Aggregate finished")
 db.close()

@@ -4,11 +4,42 @@ import lstore.config
 from pathlib import Path
 import os
 import sys
+import pickle
 
 INDIRECTION_COLUMN = 0
 RID_COLUMN = 1
 TIMESTAMP_COLUMN = 2
 SCHEMA_ENCODING_COLUMN = 3
+
+
+#only return if there is a page directory file specified, only happens after the db has been closed
+def read_page_directory(name):
+    file_name = os.getcwd() + lstore.config.DBName + "/" + name + "/page_directory.pkl"
+    if os.path.exists(file_name):
+        with open(file_name, 'rb') as file:
+            return pickle.load(file)
+    else:
+        return {} #just return empty dict
+
+def write_page_directory(name, page_directory):
+    file_name = os.getcwd() + lstore.config.DBName + "/" + name + "/page_directory.pkl"
+    with open(file_name, "wb") as file:
+        pickle.dump(page_directory, file)
+
+def read_counters(name):
+    counters = []
+    file_name = os.getcwd() + lstore.config.DBName + "/" + name + "/counters"
+    if os.path.exists(file_name):
+        with open(file_name, "rb") as file:
+            for counter in range(6):
+                counters.append(int.from_bytes(file.read(8), "big"))
+        return counters
+
+def write_counters(name, counters):
+    file_name = os.getcwd() + lstore.config.DBName + "/" + name + "/counters"
+    with open(file_name, "wb") as file:
+        for counter in counters:
+            file.write((counter).to_bytes(8, "big"))
 
 class Record:
 
@@ -19,14 +50,14 @@ class Record:
 
 class Disk():
     def __init__(self, name, num_columns):
-        path_name = os.getcwd() + "/" + name
+        path_name = os.getcwd() + lstore.config.DBName + "/" + name
         if not os.path.exists(path_name):
             os.makedirs(path_name)
 
         for column_index in range(num_columns + lstore.config.Offset):
             filename = path_name + "/" + str(column_index) #name of the table / column number
             if not os.path.isfile(filename):
-                file = open(filename, 'wb+')
+                file = open(filename, 'wb')
                 empty_page = Page()
                 file.write((0).to_bytes(4, "big"))
                 file.write((empty_page.num_records).to_bytes(4, "big")) #this data is the number of records in the page
@@ -35,7 +66,7 @@ class Disk():
 
     #fetch a page from disk at the column specified and directed to the offset
     def fetch_page(self, name, column_index, offset):
-        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
+        path_name = os.getcwd() + lstore.config.DBName + "/" + name+ "/" + str(column_index)
         temp_page = Page()
         file = open(path_name, 'rb')
 
@@ -50,7 +81,7 @@ class Disk():
         return temp_page
 
     def write(self, name, column_index, offset, page_to_write):
-        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
+        path_name = os.getcwd() + lstore.config.DBName + "/" + name + "/" + str(column_index)
         file = open(path_name, 'r+b')
 
         file.seek(offset + 4) #skip the first parameter
@@ -58,7 +89,7 @@ class Disk():
         file.write(page_to_write.data)
 
     def update_offset(self, name, column_index, offset, offset_to_write):
-        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
+        path_name = os.getcwd() + lstore.config.DBName + "/" + name + "/" + str(column_index)
         file = open(path_name, 'r+b')
 
         file.seek(offset)
@@ -66,7 +97,7 @@ class Disk():
 
     #return the offset pointer for the specified disk 
     def get_offset(self, name, column_index, offset):
-        path_name = os.getcwd() + "/" + name + "/" + str(column_index)
+        path_name = os.getcwd() + lstore.config.DBName + "/" + name + "/" + str(column_index)
         file = open(path_name, 'rb')
 
         file.seek(offset)
@@ -86,29 +117,15 @@ class Table:
         self.name = name
         self.key = key
         self.num_columns = num_columns
-        self.page_directory = {}
         self.sum = 0
         self.buffer = buffer_pool
-        self.disk = Disk(self.name, self.num_columns)
+        self.disk = None
+        self.page_directory = {}
 
         self.base_RID = lstore.config.StartBaseRID
         self.tail_RID = lstore.config.StartTailRID
-        self.base_range = []
-        self.tail_range = []
-
         self.base_offset_counter = 0
         self.tail_offset_counter = 0
-
-        #populate page range with base pages, which is a list of physical pages
-        for index in range(self.num_columns + lstore.config.Offset):
-            base_page = []
-            base_page.append(Page())
-            self.base_range.append(base_page)
-
-        for index in range(self.num_columns + lstore.config.Offset):
-            tail_page = []
-            tail_page.append([Page()])
-            self.tail_range.append(tail_page)
 
     def __merge__(self):
         pass

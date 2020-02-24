@@ -1,14 +1,12 @@
 from lstore.db import Database
 from lstore.query import Query
-#from lstore.config import init
 
 from random import choice, randint, sample, seed
 
 # Student Id and 4 grades
-#init()
 db = Database()
-db.open('~/ECS165')
-grades_table = db.create_table('Grades', 5, 0)
+db.open('/ECS165')
+grades_table = db.get_table('Grades')
 query = Query(grades_table)
 
 # repopulate with random data
@@ -26,7 +24,6 @@ for _ in range(10):
 keys = sorted(list(records.keys()))
 for key in keys:
     print(records[key])
-    print(records[key])
 
 for key in keys:
     record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
@@ -35,7 +32,7 @@ for key in keys:
         if column != records[key][i]:
             error = True
     if error:
-        print('select error on', key, ':', record, ', correct:', records[key])
+        print('select error on', key, ':', record.columns, ', correct:', records[key])
 print("Select finished")
 
 deleted_keys = sample(keys, 100)

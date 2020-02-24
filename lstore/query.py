@@ -45,7 +45,7 @@ class Query:
         columns = [indirection_index, rid, timestamp, schema_encoding] + list(columns)
 
         self.table.__insert__(columns) #table insert
-        self.index.create_index(rid, columns[lstore.config.Offset:])
+        self.index.add_index(rid, columns[lstore.config.Offset:])
         self.table.base_RID += 1
 
     """
