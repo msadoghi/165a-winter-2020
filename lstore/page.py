@@ -20,7 +20,8 @@ class Page:
 			if isinstance(value, int):
 				valueInBytes = value.to_bytes(8, "big")
 			elif isinstance(value, str):
-				valueInBytes = str.encode(value)
+				valueInBytes = (0).to_bytes(8, "big")
+				#valueInBytes = str.encode(value)
 			
 			self.data[self.num_records * 8 : (self.num_records + 1) * 8] = valueInBytes
 			self.num_records += 1

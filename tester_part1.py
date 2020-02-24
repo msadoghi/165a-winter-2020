@@ -49,11 +49,10 @@ for _ in range(10):
                 if column != records[key][j]:
                     error = True
             if error:
-                print(record.columns,end="")
-                print('update error on', original, 'and', updated_columns, ':', record, ', correct:', records[key])
+                print('update error on', original, 'and', updated_columns, ':', record.columns, ', correct:', records[key])
                 sys.exit(3)
             else:
-                print('update on', original, 'and', updated_columns, ':', record)
+                print('update on', original, 'and', updated_columns, ':', record.columns)
             updated_columns[i] = None
 print("Update finished")
 
