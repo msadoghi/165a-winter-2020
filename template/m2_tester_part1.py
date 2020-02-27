@@ -18,16 +18,26 @@ for i in range(0, 1000):
 keys = sorted(list(records.keys()))
 print("Insert finished")
 
-for key in keys:
-    record = query.select(key, 0, [1, 1, 1, 1, 1])[0]
-    error = False
-    for i, column in enumerate(record.columns):
-        if column != records[key][i]:
+table.index.create_index(1)
+table.index.create_index(2)
+table.index.create_index(3)
+table.index.create_index(4)
+
+for c in range(self.num_columns):
+    _keys = list(set(record[c] for record in records))
+    index = {v: [record for record in records if record[c] == v] for v in _keys}
+    for key in _keys:
+        results = query.select(key, c, [1, 1, 1, 1, 1])
+        error = False
+        if len(results) != len(index[key]):
             error = True
-    if error:
-        print('select error on', key, ':', record, ', correct:', records[key])
-    # else:
-    #     print('select on', key, ':', record)
+        if not error:
+            for record in index[key]:
+                if record not in results:
+                    error = True
+                    break
+        if error:
+            print('select error on', key, ', column', c ':', results, ', correct:', index[key])
 print("Select finished")
 
 for _ in range(10):
