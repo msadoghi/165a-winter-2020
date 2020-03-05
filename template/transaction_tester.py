@@ -28,19 +28,15 @@ transaction_workers = []
 for i in range(num_threads):
     transaction_workers.append(TransactionWorker([]))
 
-for i in range(1000):
-    key = choice(keys)
-    record = records[key]
-    c = record[1]
+for key in keys:
     transaction = Transaction()
     for j in range(5):
-        c += 1
+        _key = choice(keys)
         q = Query(grades_table)
-        transaction.add_query(q.select, key, 0, [1, 1, 1, 1, 1]) 
+        transaction.add_query(q.select, _key, 0, [1, 1, 1, 1, 1]) 
         q = Query(grades_table)
-        transaction.add_query(q.update, key, *[None, c, None, None, None])
-    record[1] = c
-    transaction_workers[i % num_threads].add_transaction(transaction)
+        transaction.add_query(q.update, key, *[None, j + 1, None, None, None])
+    transaction_workers[key % num_threads].add_transaction(transaction)
 
 threads = []
 for transaction_worker in transaction_workers:
