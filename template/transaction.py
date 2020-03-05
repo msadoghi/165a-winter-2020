@@ -18,14 +18,13 @@ class Transaction:
     # t.add_query(q.update, 0, *[None, 1, None, 2, None])
     """
     def add_query(self, query, *args):
-        # to run the query:
-        # query.method(*args)
         self.queries.append((query, args))
 
+    # This MUST return 0 if transaction is sucessful, else it must return 0
     def run(self):
         for query, args in self.queries:
             query(*args)
-        pass
+        return 1
 
     def abort(self):
         pass
