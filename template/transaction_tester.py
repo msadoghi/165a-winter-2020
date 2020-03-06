@@ -23,20 +23,23 @@ for i in range(0, 10000):
     q = Query(grades_table)
     q.insert(*records[key])
 
-# Create transactions and assign them to workers
+# create TransactionWorkers
 transaction_workers = []
 for i in range(num_threads):
     transaction_workers.append(TransactionWorker([]))
 
-for key in keys:
+# generates 10k random transactions
+# each transaction will increment the first column of a record 5 times
+for i in range(1000):
+    k = randint(0, 2000 - 1)
     transaction = Transaction()
     for j in range(5):
-        _key = choice(keys)
+        key = k * 5 + j
         q = Query(grades_table)
-        transaction.add_query(q.select, _key, 0, [1, 1, 1, 1, 1]) 
+        transaction.add_query(q.select, key, 0, [1, 1, 1, 1, 1])
         q = Query(grades_table)
-        transaction.add_query(q.update, key, *[None, j + 1, None, None, None])
-    transaction_workers[key % num_threads].add_transaction(transaction)
+        transaction.add_query(q.increment, key, 1)
+    transaction_workers[i % num_threads].add_transaction(transaction)
 
 threads = []
 for transaction_worker in transaction_workers:
