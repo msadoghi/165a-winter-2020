@@ -34,7 +34,7 @@ for i in range(1000):
     k = randint(0, 2000 - 1)
     transaction = Transaction()
     for j in range(5):
-        key = k * 5 + j
+        key = keys[k * 5 + j]
         q = Query(grades_table)
         transaction.add_query(q.select, key, 0, [1, 1, 1, 1, 1])
         q = Query(grades_table)

@@ -21,8 +21,7 @@ class TransactionWorker:
     # q = Query(grades_table)
     # t = Transaction()
     # t.add_query(q.update, 0, *[None, 1, None, 2, None])
-    # txn_worker = TransactionWorker([t])
-    # th1 = threading.Thread(target=txn_worker.run)
+    # transaction_worker = TransactionWorker([t])
     """
     def run(self):
         for transaction in self.transactions:
